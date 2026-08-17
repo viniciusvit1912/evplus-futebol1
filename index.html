@@ -699,4 +699,204 @@ async function testarAPI() {
     const status =
         document.getElementById("status");
 
-    status.className = "
+    try {
+
+        const resposta =
+            await fetch("/api");
+
+        if (!resposta.ok) {
+            throw new Error(
+                "API respondeu com erro: " +
+                resposta.status
+            );
+        }
+
+        const dados =
+            await resposta.json();
+
+        if (dados.status === "online") {
+
+            status.className =
+                "status online";
+
+            status.textContent =
+                "● API funcionando";
+
+        } else {
+
+            throw new Error(
+                "Resposta inesperada da API"
+            );
+
+        }
+
+    } catch (erro) {
+
+        status.className =
+            "status error";
+
+        status.textContent =
+            "● Erro na API";
+
+        console.error(
+            "Erro ao conectar com a API:",
+            erro
+        );
+    }
+}
+
+
+/* =====================================================
+   ANALISAR EV
+===================================================== */
+
+async function analisarEV() {
+
+    const resultado =
+        document.getElementById("resultado");
+
+    const odd =
+        numero("odd");
+
+    if (odd === null || odd <= 1) {
+
+        resultado.innerHTML =
+            '<span class="negativo">' +
+            'Informe uma odd válida.' +
+            '</span>';
+
+        return;
+    }
+
+    const probabilidade =
+        prompt(
+            "Digite a probabilidade estimada (%)"
+        );
+
+    if (probabilidade === null) {
+        return;
+    }
+
+    const prob =
+        Number(probabilidade);
+
+    if (!Number.isFinite(prob) ||
+        prob <= 0 ||
+        prob > 100) {
+
+        resultado.innerHTML =
+            '<span class="negativo">' +
+            'Probabilidade inválida.' +
+            '</span>';
+
+        return;
+    }
+
+    try {
+
+        const resposta =
+            await fetch("/api", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    probabilidade: prob,
+                    odd: odd
+                })
+            });
+
+        const dados =
+            await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                dados.mensagem ||
+                "Erro na API"
+            );
+        }
+
+        const ev =
+            dados.ev;
+
+        let classe =
+            "aguarda";
+
+        let decisao =
+            "🟡 AGUARDA";
+
+        if (ev > 5) {
+
+            classe =
+                "positivo";
+
+            decisao =
+                "🟢 ENTRA";
+
+        } else if (ev < 0) {
+
+            classe =
+                "negativo";
+
+            decisao =
+                "🔴 PASSA";
+        }
+
+        resultado.innerHTML =
+
+            "<strong>Veredito:</strong> " +
+            '<span class="' +
+            classe +
+            '">' +
+            decisao +
+            "</span><br><br>" +
+
+            "<strong>Probabilidade:</strong> " +
+            prob + "%<br>" +
+
+            "<strong>Odd:</strong> " +
+            odd.toFixed(2) + "<br>" +
+
+            "<strong>Probabilidade implícita:</strong> " +
+            (100 / odd).toFixed(2) +
+            "%<br>" +
+
+            "<strong>EV:</strong> " +
+            ev.toFixed(2) +
+            "%<br>" +
+
+            "<strong>Odd justa:</strong> " +
+            dados.valor_justo;
+
+    } catch (erro) {
+
+        resultado.innerHTML =
+            '<span class="erro-api">' +
+            "Erro ao consultar a API: " +
+            erro.message +
+            "</span>";
+    }
+}
+
+
+/* =====================================================
+   BOTÃO ANALISAR
+===================================================== */
+
+document
+    .getElementById("analisar")
+    .addEventListener(
+        "click",
+        analisarEV
+    );
+
+
+/* =====================================================
+   INICIAR TESTE DA API
+===================================================== */
+
+testarAPI();
