@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>EV+ Futebol</title>
 
     <style>
@@ -14,7 +15,7 @@
         }
 
         header {
-            padding: 20px;
+            padding: 22px;
             background: #111820;
             text-align: center;
         }
@@ -25,23 +26,23 @@
         }
 
         .container {
-            padding: 20px;
-            max-width: 700px;
+            max-width: 750px;
             margin: auto;
+            padding: 18px;
         }
 
         .card {
             background: #151d26;
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         input {
             width: 100%;
             box-sizing: border-box;
-            padding: 14px;
-            margin: 8px 0 15px;
+            padding: 13px;
+            margin: 7px 0 14px;
             border-radius: 8px;
             border: 1px solid #333;
             background: #0b0f14;
@@ -51,17 +52,16 @@
 
         button {
             width: 100%;
-            background: #00ff88;
-            border: none;
             padding: 14px;
+            border: 0;
             border-radius: 8px;
+            background: #00ff88;
             font-weight: bold;
             font-size: 16px;
         }
 
         .resultado {
-            font-size: 18px;
-            line-height: 1.7;
+            line-height: 1.8;
         }
 
         .positivo {
@@ -73,6 +73,16 @@
             color: #ff5555;
             font-weight: bold;
         }
+
+        .jogo {
+            border-top: 1px solid #333;
+            padding: 15px 0;
+        }
+
+        .pequeno {
+            color: #aaa;
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -80,14 +90,38 @@
 
 <header>
     <h1>⚽ EV+ FUTEBOL</h1>
-    <p>Calculadora de Valor Esperado</p>
+    <p>Análise de valor esperado</p>
 </header>
 
 <div class="container">
 
     <div class="card">
 
-        <h2>🎯 Calcular EV</h2>
+        <h2>⚽ Nova análise</h2>
+
+        <label>Time da casa</label>
+
+        <input
+            id="casa"
+            type="text"
+            placeholder="Ex: Flamengo"
+        >
+
+        <label>Time visitante</label>
+
+        <input
+            id="visitante"
+            type="text"
+            placeholder="Ex: Palmeiras"
+        >
+
+        <label>Mercado</label>
+
+        <input
+            id="mercado"
+            type="text"
+            placeholder="Ex: Mais de 2.5 gols"
+        >
 
         <label>Probabilidade estimada (%)</label>
 
@@ -105,57 +139,103 @@
         <input
             id="odd"
             type="number"
-            min="1"
+            min="1.01"
             step="0.01"
             placeholder="Ex: 2.00"
         >
 
-        <button onclick="calcularEV()">
-            🧮 CALCULAR EV
+        <button onclick="analisar()">
+            🎯 ANALISAR PARTIDA
         </button>
 
     </div>
+
 
     <div class="card">
 
         <h2>📊 Resultado</h2>
 
         <div id="resultado" class="resultado">
-            Informe a probabilidade e a odd.
+            Preencha os dados acima.
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>📋 Histórico</h2>
+
+        <div id="historico">
+            Nenhuma análise realizada.
         </div>
 
     </div>
 
 </div>
 
+
 <script>
 
-async function calcularEV() {
+let historico = [];
+
+
+async function analisar() {
+
+    const casa =
+        document.getElementById("casa").value.trim();
+
+    const visitante =
+        document.getElementById("visitante").value.trim();
+
+    const mercado =
+        document.getElementById("mercado").value.trim();
 
     const probabilidade =
-        parseFloat(document.getElementById("probabilidade").value);
+        parseFloat(
+            document.getElementById("probabilidade").value
+        );
 
     const odd =
-        parseFloat(document.getElementById("odd").value);
+        parseFloat(
+            document.getElementById("odd").value
+        );
 
     const resultado =
         document.getElementById("resultado");
 
+
     if (
+        !casa ||
+        !visitante ||
+        !mercado ||
         isNaN(probabilidade) ||
-        isNaN(odd) ||
+        isNaN(odd)
+    ) {
+
+        resultado.innerHTML =
+            "⚠️ Preencha todos os campos.";
+
+        return;
+    }
+
+
+    if (
         probabilidade <= 0 ||
         probabilidade >= 100 ||
         odd <= 1
     ) {
 
         resultado.innerHTML =
-            "⚠️ Informe uma probabilidade entre 0 e 100 e uma odd maior que 1.";
+            "⚠️ Probabilidade deve estar entre 0 e 100 e a odd deve ser maior que 1.";
 
         return;
     }
 
-    resultado.innerHTML = "⏳ Calculando...";
+
+    resultado.innerHTML =
+        "⏳ Analisando...";
+
 
     try {
 
@@ -168,49 +248,118 @@ async function calcularEV() {
             },
 
             body: JSON.stringify({
+
                 probabilidade: probabilidade,
                 odd: odd
+
             })
 
         });
 
+
         if (!resposta.ok) {
+
             throw new Error("Erro na API");
+
         }
 
-        const dados = await resposta.json();
+
+        const dados =
+            await resposta.json();
+
+
+        const registro = {
+
+            casa: casa,
+            visitante: visitante,
+            mercado: mercado,
+            probabilidade: dados.probabilidade,
+            odd: dados.odd,
+            ev: dados.ev,
+            valor_justo: dados.valor_justo
+
+        };
+
+
+        historico.unshift(registro);
+
+
+        if (historico.length > 10) {
+
+            historico.pop();
+
+        }
+
 
         let classificacao;
+
 
         if (dados.ev > 0) {
 
             classificacao =
-                `<span class="positivo">🟢 VALOR POSITIVO</span>`;
+                `<span class="positivo">
+                    🟢 VALOR POSITIVO
+                </span>`;
 
         } else {
 
             classificacao =
-                `<span class="negativo">🔴 VALOR NEGATIVO</span>`;
+                `<span class="negativo">
+                    🔴 VALOR NEGATIVO
+                </span>`;
 
         }
 
+
         resultado.innerHTML = `
-            Probabilidade: <strong>${dados.probabilidade}%</strong><br>
-            Odd: <strong>${dados.odd}</strong><br>
-            EV: <strong>${dados.ev}%</strong><br>
-            Odd justa: <strong>${dados.valor_justo}</strong><br><br>
+
+            <strong>${casa}</strong>
+            🆚
+            <strong>${visitante}</strong>
+
+            <br>
+
+            Mercado:
+            <strong>${mercado}</strong>
+
+            <br><br>
+
+            Probabilidade:
+            <strong>${dados.probabilidade}%</strong>
+
+            <br>
+
+            Odd:
+            <strong>${dados.odd}</strong>
+
+            <br>
+
+            EV:
+            <strong>${dados.ev}%</strong>
+
+            <br>
+
+            Odd justa:
+            <strong>${dados.valor_justo}</strong>
+
+            <br><br>
+
             ${classificacao}
+
         `;
+
+
+        mostrarHistorico();
+
 
     } catch (erro) {
 
         resultado.innerHTML =
-            "❌ Não foi possível calcular. Verifique a API.";
+            "❌ Erro ao conectar com a API.";
 
     }
+
 }
 
-</script>
 
-</body>
-</html>
+function
