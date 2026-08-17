@@ -8,6 +8,10 @@
 
 <style>
 
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -17,21 +21,23 @@ body {
 
 header {
     background: #111820;
-    padding: 22px;
+    padding: 24px 18px;
     text-align: center;
 }
 
 header h1 {
     margin: 0;
     color: #00ff88;
+    font-size: 28px;
 }
 
 header p {
     color: #aaa;
+    margin-bottom: 0;
 }
 
 .container {
-    max-width: 750px;
+    max-width: 760px;
     margin: auto;
     padding: 18px;
 }
@@ -43,17 +49,21 @@ header p {
     margin-bottom: 18px;
 }
 
+h2 {
+    margin-top: 0;
+}
+
 label {
     display: block;
-    margin-top: 12px;
+    margin-top: 14px;
+    margin-bottom: 7px;
     color: #bbb;
 }
 
-input {
+input,
+select {
     width: 100%;
-    box-sizing: border-box;
     padding: 14px;
-    margin-top: 7px;
     border-radius: 8px;
     border: 1px solid #444;
     background: #0b0f14;
@@ -64,7 +74,7 @@ input {
 button {
     width: 100%;
     padding: 15px;
-    margin-top: 18px;
+    margin-top: 20px;
     border: 0;
     border-radius: 8px;
     background: #00ff88;
@@ -75,6 +85,11 @@ button {
 
 button:active {
     transform: scale(0.98);
+}
+
+.status {
+    color: #00ff88;
+    font-weight: bold;
 }
 
 .resultado {
@@ -91,6 +106,20 @@ button:active {
     font-weight: bold;
 }
 
+.aguarda {
+    color: #ffd166;
+    font-weight: bold;
+}
+
+.classificacao {
+    display: inline-block;
+    padding: 7px 12px;
+    margin: 8px 0;
+    border-radius: 7px;
+    background: #202a34;
+    font-weight: bold;
+}
+
 .historico-item {
     border-top: 1px solid #333;
     padding: 15px 0;
@@ -101,9 +130,15 @@ button:active {
     color: #999;
 }
 
-.status {
-    color: #00ff88;
-    font-weight: bold;
+.risco {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.info {
+    color: #aaa;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 </style>
@@ -117,7 +152,7 @@ button:active {
 
 <h1>⚽ EV+ FUTEBOL</h1>
 
-<p>Dashboard de análise de valor esperado</p>
+<p>Professional Strategic Betting Analyst</p>
 
 </header>
 
@@ -138,7 +173,7 @@ button:active {
 </div>
 
 
-<!-- NOVA ANÁLISE -->
+<!-- ANÁLISE -->
 
 <div class="card">
 
@@ -165,11 +200,65 @@ button:active {
 
 <label>Mercado</label>
 
-<input
-    id="mercado"
-    type="text"
-    placeholder="Ex: Mais de 2.5 gols"
->
+<select id="mercado">
+
+    <option value="">
+        Selecione o mercado
+    </option>
+
+    <option value="Resultado">
+        ⚽ Resultado
+    </option>
+
+    <option value="Dupla chance">
+        ⚽ Dupla chance
+    </option>
+
+    <option value="DNB">
+        ⚽ DNB
+    </option>
+
+    <option value="Over/Under gols">
+        ⚽ Over/Under gols
+    </option>
+
+    <option value="Ambas marcam">
+        ⚽ Ambas marcam
+    </option>
+
+    <option value="Autor do gol">
+        ⚽ Autor do gol
+    </option>
+
+    <option value="Chute no gol">
+        🎯 Chute no gol
+    </option>
+
+    <option value="Chute de fora da área no gol">
+        🎯 Chute de fora da área no gol
+    </option>
+
+    <option value="Cabeceio no gol">
+        🧠 Cabeceio no gol
+    </option>
+
+    <option value="Escanteios">
+        🚩 Escanteios
+    </option>
+
+    <option value="Cartões">
+        🟨 Cartões
+    </option>
+
+    <option value="Cartão de jogador">
+        🟨 Cartão de jogador
+    </option>
+
+    <option value="Finalizações">
+        🏃 Finalizações
+    </option>
+
+</select>
 
 
 <label>Probabilidade estimada (%)</label>
@@ -184,7 +273,7 @@ button:active {
 >
 
 
-<label>Odd</label>
+<label>Odd disponível</label>
 
 <input
     id="odd"
@@ -195,8 +284,16 @@ button:active {
 >
 
 
+<div class="info">
+
+    A probabilidade deve representar sua estimativa
+    baseada nos dados disponíveis.
+
+</div>
+
+
 <button id="analisar">
-🎯 ANALISAR PARTIDA
+🎯 ANALISAR EV+
 </button>
 
 </div>
@@ -210,7 +307,7 @@ button:active {
 
 <div id="resultado" class="resultado">
 
-Preencha os dados da partida.
+Preencha os dados da análise.
 
 </div>
 
@@ -221,7 +318,7 @@ Preencha os dados da partida.
 
 <div class="card">
 
-<h2>📋 Histórico de análises</h2>
+<h2>📋 Histórico</h2>
 
 <div id="historico">
 
@@ -243,7 +340,9 @@ Nenhuma análise realizada nesta sessão.
 let historico = [];
 
 
-/* TESTAR API */
+/* =========================
+   TESTE DA API
+========================= */
 
 async function testarAPI() {
 
@@ -283,350 +382,50 @@ async function testarAPI() {
 }
 
 
-/* ANALISAR */
+/* =========================
+   CLASSIFICAÇÃO
+========================= */
 
-document
-.getElementById("analisar")
-.addEventListener("click", async function() {
+function classificarAposta(ev, probabilidade) {
 
+    /*
+       Critério inicial:
 
-    const resultado =
-        document.getElementById("resultado");
+       A:
+       EV >= 10%
+       e probabilidade >= 55%
 
+       B:
+       EV >= 5%
 
-    const casa =
-        document
-        .getElementById("casa")
-        .value
-        .trim();
+       C:
+       EV positivo abaixo disso
 
-
-    const visitante =
-        document
-        .getElementById("visitante")
-        .value
-        .trim();
-
-
-    const mercado =
-        document
-        .getElementById("mercado")
-        .value
-        .trim();
+       EV negativo:
+       PASSA
+    */
 
 
-    const probabilidade =
-        Number(
-            document
-            .getElementById("probabilidade")
-            .value
-        );
+    if (ev >= 10 && probabilidade >= 55) {
 
-
-    const odd =
-        Number(
-            document
-            .getElementById("odd")
-            .value
-        );
-
-
-    /* VALIDAÇÃO */
-
-    if (
-        !casa ||
-        !visitante ||
-        !mercado
-    ) {
-
-        resultado.innerHTML =
-            "⚠️ Preencha os times e o mercado.";
-
-        return;
+        return {
+            classe: "A",
+            nome: "A — ALTA CONFIANÇA / MELHOR EV",
+            decisao: "ENTRA"
+        };
 
     }
 
 
-    if (
-        !probabilidade ||
-        probabilidade <= 0 ||
-        probabilidade >= 100
-    ) {
+    if (ev >= 5) {
 
-        resultado.innerHTML =
-            "⚠️ Informe uma probabilidade entre 0 e 100.";
-
-        return;
+        return {
+            classe: "B",
+            nome: "B — BOA OPORTUNIDADE / VALOR MODERADO",
+            decisao: "ENTRA"
+        };
 
     }
 
 
-    if (
-        !odd ||
-        odd <= 1
-    ) {
-
-        resultado.innerHTML =
-            "⚠️ Informe uma odd maior que 1.";
-
-        return;
-
-    }
-
-
-    resultado.innerHTML =
-        "⏳ Calculando EV...";
-
-
-    try {
-
-
-        const resposta =
-            await fetch("/api", {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    probabilidade:
-                        probabilidade,
-
-                    odd:
-                        odd
-
-                })
-
-            });
-
-
-        const dados =
-            await resposta.json();
-
-
-        if (!resposta.ok) {
-
-            resultado.innerHTML =
-                "❌ Erro: " +
-                (
-                    dados.mensagem ||
-                    "API"
-                );
-
-            return;
-
-        }
-
-
-        /* CLASSIFICAÇÃO */
-
-        let classificacao;
-
-
-        if (dados.ev > 0) {
-
-            classificacao =
-                '<span class="positivo">' +
-                '🟢 VALOR POSITIVO' +
-                '</span>';
-
-        } else {
-
-            classificacao =
-                '<span class="negativo">' +
-                '🔴 VALOR NEGATIVO' +
-                '</span>';
-
-        }
-
-
-        /* RESULTADO */
-
-        resultado.innerHTML =
-
-            "<strong>" +
-            casa +
-            "</strong> 🆚 <strong>" +
-            visitante +
-            "</strong>" +
-
-            "<br><br>" +
-
-            "Mercado: <strong>" +
-            mercado +
-            "</strong>" +
-
-            "<br>" +
-
-            "Probabilidade: <strong>" +
-            dados.probabilidade +
-            "%</strong>" +
-
-            "<br>" +
-
-            "Odd: <strong>" +
-            dados.odd +
-            "</strong>" +
-
-            "<br>" +
-
-            "EV: <strong>" +
-            dados.ev +
-            "%</strong>" +
-
-            "<br>" +
-
-            "Odd justa: <strong>" +
-            dados.valor_justo +
-            "</strong>" +
-
-            "<br><br>" +
-
-            classificacao;
-
-
-        /* SALVAR HISTÓRICO */
-
-        historico.unshift({
-
-            casa:
-                casa,
-
-            visitante:
-                visitante,
-
-            mercado:
-                mercado,
-
-            probabilidade:
-                dados.probabilidade,
-
-            odd:
-                dados.odd,
-
-            ev:
-                dados.ev,
-
-            valorJusto:
-                dados.valor_justo
-
-        });
-
-
-        /* LIMITAR HISTÓRICO */
-
-        if (historico.length > 10) {
-
-            historico.pop();
-
-        }
-
-
-        mostrarHistorico();
-
-
-    } catch (erro) {
-
-        resultado.innerHTML =
-            "❌ Falha ao comunicar com a API.";
-
-    }
-
-});
-
-
-/* HISTÓRICO */
-
-function mostrarHistorico() {
-
-
-    const elemento =
-        document
-        .getElementById("historico");
-
-
-    if (historico.length === 0) {
-
-        elemento.innerHTML =
-            '<div class="vazio">' +
-            'Nenhuma análise realizada nesta sessão.' +
-            '</div>';
-
-        return;
-
-    }
-
-
-    elemento.innerHTML =
-
-        historico
-        .map(function(item) {
-
-
-            const classe =
-                item.ev > 0
-                ? "positivo"
-                : "negativo";
-
-
-            return `
-
-                <div class="historico-item">
-
-                    <strong>
-                        ${item.casa}
-                        🆚
-                        ${item.visitante}
-                    </strong>
-
-                    <br>
-
-                    Mercado:
-                    ${item.mercado}
-
-                    <br>
-
-                    Probabilidade:
-                    ${item.probabilidade}%
-
-                    <br>
-
-                    Odd:
-                    ${item.odd}
-
-                    <br>
-
-                    EV:
-                    <span class="${classe}">
-                        ${item.ev}%
-                    </span>
-
-                    <br>
-
-                    Odd justa:
-                    ${item.valorJusto}
-
-                </div>
-
-            `;
-
-
-        })
-        .join("");
-
-}
-
-
-/* INICIAR */
-
-testarAPI();
-
-
-</script>
-
-</body>
-</html>
+    if (ev
