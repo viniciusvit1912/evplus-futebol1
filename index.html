@@ -4,25 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>EV+ Futebol — Motor Estatístico</title>
+<title>EV+ Futebol</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
     background: #0b0f14;
-    color: white;
+    color: #fff;
+    font-family: Arial, sans-serif;
 }
 
 header {
     background: #111820;
-    padding: 24px 18px;
+    padding: 22px 16px;
     text-align: center;
+    border-bottom: 1px solid #202a34;
 }
 
 header h1 {
@@ -32,32 +32,33 @@ header h1 {
 }
 
 header p {
-    color: #aaa;
-    margin-bottom: 0;
+    margin: 8px 0 0;
+    color: #999;
 }
 
 .container {
-    max-width: 800px;
+    width: 100%;
+    max-width: 850px;
     margin: auto;
-    padding: 18px;
+    padding: 16px;
 }
 
 .card {
     background: #151d26;
+    border: 1px solid #202a34;
     border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 18px;
+    padding: 18px;
+    margin-bottom: 16px;
 }
 
-h2 {
+.card h2 {
     margin-top: 0;
 }
 
 label {
     display: block;
-    margin-top: 13px;
-    margin-bottom: 6px;
-    color: #bbb;
+    margin: 13px 0 6px;
+    color: #aaa;
 }
 
 input,
@@ -65,10 +66,16 @@ select {
     width: 100%;
     padding: 13px;
     border-radius: 8px;
-    border: 1px solid #444;
+    border: 1px solid #394550;
     background: #0b0f14;
-    color: white;
+    color: #fff;
     font-size: 16px;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #00ff88;
 }
 
 .grid {
@@ -79,15 +86,19 @@ select {
 
 button {
     width: 100%;
-    padding: 15px;
-    margin-top: 20px;
-    border: 0;
-    border-radius: 8px;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 18px;
     background: #00ff88;
-    color: #07100b;
+    color: #06110b;
+    font-size: 17px;
     font-weight: bold;
-    font-size: 16px;
     cursor: pointer;
+}
+
+button:hover {
+    filter: brightness(1.08);
 }
 
 button:active {
@@ -95,12 +106,20 @@ button:active {
 }
 
 .status {
-    color: #00ff88;
     font-weight: bold;
+    color: #ffd166;
+}
+
+.status.online {
+    color: #00ff88;
+}
+
+.status.error {
+    color: #ff5555;
 }
 
 .resultado {
-    line-height: 1.9;
+    line-height: 1.8;
 }
 
 .positivo {
@@ -120,10 +139,10 @@ button:active {
 
 .badge {
     display: inline-block;
-    padding: 8px 12px;
-    margin: 5px 0;
-    border-radius: 8px;
     background: #202a34;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
     font-weight: bold;
 }
 
@@ -131,53 +150,57 @@ button:active {
     color: #999;
     font-size: 13px;
     line-height: 1.6;
-    margin-top: 10px;
 }
 
 .historico-item {
-    border-top: 1px solid #333;
-    padding: 15px 0;
+    border-top: 1px solid #303942;
+    padding: 14px 0;
     line-height: 1.7;
 }
 
 .vazio {
-    color: #999;
+    color: #888;
+}
+
+.erro-api {
+    color: #ff7777;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 @media (max-width: 600px) {
-
     .grid {
         grid-template-columns: 1fr;
     }
 
+    header h1 {
+        font-size: 24px;
+    }
 }
-
 </style>
 </head>
 
 <body>
 
 <header>
-
-<h1>⚽ EV+ FUTEBOL</h1>
-
-<p>Professional Strategic Betting Analyst</p>
-
+    <h1>⚽ EV+ FUTEBOL</h1>
+    <p>Professional Strategic Betting Analyst</p>
 </header>
 
 
 <div class="container">
 
 
-<!-- STATUS DA API -->
+<!-- STATUS -->
 
 <div class="card">
 
-<h2>📡 Sistema</h2>
+    <h2>📡 Sistema</h2>
 
-<div id="status" class="status">
-● Verificando API...
-</div>
+    <div id="status" class="status">
+        ● Verificando API...
+    </div>
 
 </div>
 
@@ -186,55 +209,108 @@ button:active {
 
 <div class="card">
 
-<h2>⚽ Partida</h2>
+    <h2>⚽ Partida</h2>
 
-<label>Time da casa</label>
+    <label for="casa">Time da casa</label>
 
-<input
-    id="casa"
-    type="text"
-    placeholder="Ex: Flamengo"
->
+    <input
+        id="casa"
+        type="text"
+        placeholder="Ex: Flamengo"
+    >
 
-<label>Time visitante</label>
 
-<input
-    id="visitante"
-    type="text"
-    placeholder="Ex: Palmeiras"
->
+    <label for="visitante">Time visitante</label>
 
-<label>Mercado</label>
+    <input
+        id="visitante"
+        type="text"
+        placeholder="Ex: Palmeiras"
+    >
 
-<select id="mercado">
 
-<option value="">Selecione</option>
+    <label for="mercado">Mercado</label>
 
-<option>Resultado</option>
-<option>Dupla chance</option>
-<option>DNB</option>
-<option>Over/Under gols</option>
-<option>Ambas marcam</option>
-<option>Autor do gol</option>
-<option>Chute no gol</option>
-<option>Chute de fora da área no gol</option>
-<option>Cabeceio no gol</option>
-<option>Escanteios</option>
-<option>Cartões</option>
-<option>Cartão de jogador</option>
-<option>Finalizações</option>
+    <select id="mercado">
 
-</select>
+        <option value="">
+            Selecione o mercado
+        </option>
 
-<label>Odd disponível</label>
+        <option value="Resultado">
+            Resultado
+        </option>
 
-<input
-    id="odd"
-    type="number"
-    min="1.01"
-    step="0.01"
-    placeholder="Ex: 2.00"
->
+        <option value="Dupla chance">
+            Dupla chance
+        </option>
+
+        <option value="DNB">
+            DNB
+        </option>
+
+        <option value="Over/Under gols">
+            Over/Under gols
+        </option>
+
+        <option value="Ambas marcam">
+            Ambas marcam
+        </option>
+
+        <option value="Autor do gol">
+            Autor do gol
+        </option>
+
+        <option value="Chute no gol">
+            Chute no gol
+        </option>
+
+        <option value="Chute de fora da área no gol">
+            Chute de fora da área no gol
+        </option>
+
+        <option value="Cabeceio no gol">
+            Cabeceio no gol
+        </option>
+
+        <option value="Escanteios">
+            Escanteios
+        </option>
+
+        <option value="Cartões">
+            Cartões
+        </option>
+
+        <option value="Cartão de jogador">
+            Cartão de jogador
+        </option>
+
+        <option value="Finalizações">
+            Finalizações
+        </option>
+
+    </select>
+
+
+    <label for="odd">Odd disponível</label>
+
+    <input
+        id="odd"
+        type="number"
+        min="1.01"
+        step="0.01"
+        placeholder="Ex: 2.00"
+    >
+
+
+    <!-- BOTÃO PRINCIPAL -->
+
+    <button
+        id="analisar"
+        type="button"
+    >
+        🎯 ANALISAR PARTIDA
+    </button>
 
 </div>
 
@@ -243,52 +319,59 @@ button:active {
 
 <div class="card">
 
-<h2>🧠 Contexto da partida</h2>
+    <h2>🧠 Contexto da partida</h2>
 
-<div class="grid">
+    <div class="grid">
 
-<div>
+        <div>
 
-<label>Minuto</label>
+            <label for="minuto">
+                Minuto
+            </label>
 
-<input
-    id="minuto"
-    type="number"
-    min="0"
-    max="130"
-    placeholder="Ex: 35"
->
+            <input
+                id="minuto"
+                type="number"
+                min="0"
+                max="130"
+                placeholder="Ex: 35"
+            >
 
-</div>
-
-<div>
-
-<label>Placar</label>
-
-<input
-    id="placar"
-    type="text"
-    placeholder="Ex: 1-0"
->
-
-</div>
-
-</div>
+        </div>
 
 
-<label>Momento</label>
+        <div>
 
-<select id="momento">
+            <label for="placar">
+                Placar
+            </label>
 
-<option value="pre">
-Pré-jogo
-</option>
+            <input
+                id="placar"
+                type="text"
+                placeholder="Ex: 1-0"
+            >
 
-<option value="live">
-LIVE
-</option>
+        </div>
 
-</select>
+    </div>
+
+
+    <label for="momento">
+        Momento
+    </label>
+
+    <select id="momento">
+
+        <option value="pre">
+            Pré-jogo
+        </option>
+
+        <option value="live">
+            LIVE
+        </option>
+
+    </select>
 
 </div>
 
@@ -297,22 +380,323 @@ LIVE
 
 <div class="card">
 
-<h2>📊 Estatísticas</h2>
+    <h2>📊 Estatísticas</h2>
 
-<p class="info">
-Preencha somente os dados que você realmente possui.
-Campos vazios não serão tratados como dados.
-</p>
-
-
-<div class="grid">
+    <p class="info">
+        Informe os dados disponíveis.
+        Campos vazios não serão inventados pelo sistema.
+    </p>
 
 
-<div>
+    <div class="grid">
 
-<label>xG Casa</label>
 
-<input
-    id="xgCasa"
-    type="number"
-    step="0.
+        <div>
+
+            <label for="xgCasa">
+                xG Casa
+            </label>
+
+            <input
+                id="xgCasa"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex: 1.60"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="xgFora">
+                xG Visitante
+            </label>
+
+            <input
+                id="xgFora"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex: 0.90"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="xgotCasa">
+                xGOT Casa
+            </label>
+
+            <input
+                id="xgotCasa"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex: 1.40"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="xgotFora">
+                xGOT Visitante
+            </label>
+
+            <input
+                id="xgotFora"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex: 0.70"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="finalCasa">
+                Finalizações Casa
+            </label>
+
+            <input
+                id="finalCasa"
+                type="number"
+                min="0"
+                placeholder="Ex: 12"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="finalFora">
+                Finalizações Visitante
+            </label>
+
+            <input
+                id="finalFora"
+                type="number"
+                min="0"
+                placeholder="Ex: 8"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="alvoCasa">
+                Finalizações no alvo Casa
+            </label>
+
+            <input
+                id="alvoCasa"
+                type="number"
+                min="0"
+                placeholder="Ex: 5"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="alvoFora">
+                Finalizações no alvo Visitante
+            </label>
+
+            <input
+                id="alvoFora"
+                type="number"
+                min="0"
+                placeholder="Ex: 3"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="chancesCasa">
+                Grandes chances Casa
+            </label>
+
+            <input
+                id="chancesCasa"
+                type="number"
+                min="0"
+                placeholder="Ex: 3"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="chancesFora">
+                Grandes chances Visitante
+            </label>
+
+            <input
+                id="chancesFora"
+                type="number"
+                min="0"
+                placeholder="Ex: 1"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="escCasa">
+                Escanteios Casa
+            </label>
+
+            <input
+                id="escCasa"
+                type="number"
+                min="0"
+                placeholder="Ex: 4"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="escFora">
+                Escanteios Visitante
+            </label>
+
+            <input
+                id="escFora"
+                type="number"
+                min="0"
+                placeholder="Ex: 2"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="cartCasa">
+                Cartões Casa
+            </label>
+
+            <input
+                id="cartCasa"
+                type="number"
+                min="0"
+                placeholder="Ex: 1"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label for="cartFora">
+                Cartões Visitante
+            </label>
+
+            <input
+                id="cartFora"
+                type="number"
+                min="0"
+                placeholder="Ex: 2"
+            >
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- RESULTADO -->
+
+<div class="card">
+
+    <h2>📈 Veredito</h2>
+
+    <div id="resultado" class="resultado">
+        Aguardando análise.
+    </div>
+
+</div>
+
+
+<!-- HISTÓRICO -->
+
+<div class="card">
+
+    <h2>📋 Histórico</h2>
+
+    <div id="historico">
+
+        <div class="vazio">
+            Nenhuma análise nesta sessão.
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   FUNÇÃO PARA PEGAR NÚMEROS
+===================================================== */
+
+function numero(id) {
+
+    const elemento =
+        document.getElementById(id);
+
+    if (!elemento) {
+        return null;
+    }
+
+    const valor =
+        elemento.value.trim();
+
+    if (valor === "") {
+        return null;
+    }
+
+    const numeroConvertido =
+        Number(valor);
+
+    if (!Number.isFinite(numeroConvertido)) {
+        return null;
+    }
+
+    return numeroConvertido;
+}
+
+
+/* =====================================================
+   TESTAR API
+===================================================== */
+
+async function testarAPI() {
+
+    const status =
+        document.getElementById("status");
+
+    status.className = "
