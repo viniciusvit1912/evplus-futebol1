@@ -14,13 +14,13 @@
 body {
     margin: 0;
     background: #0b0f14;
-    color: #fff;
+    color: white;
     font-family: Arial, sans-serif;
 }
 
 header {
     background: #111820;
-    padding: 22px 16px;
+    padding: 24px 16px;
     text-align: center;
     border-bottom: 1px solid #202a34;
 }
@@ -32,12 +32,11 @@ header h1 {
 }
 
 header p {
-    margin: 8px 0 0;
     color: #999;
+    margin: 8px 0 0;
 }
 
 .container {
-    width: 100%;
     max-width: 850px;
     margin: auto;
     padding: 16px;
@@ -51,13 +50,13 @@ header p {
     margin-bottom: 16px;
 }
 
-.card h2 {
+h2 {
     margin-top: 0;
 }
 
 label {
     display: block;
-    margin: 13px 0 6px;
+    margin: 12px 0 6px;
     color: #aaa;
 }
 
@@ -68,41 +67,20 @@ select {
     border-radius: 8px;
     border: 1px solid #394550;
     background: #0b0f14;
-    color: #fff;
+    color: white;
     font-size: 16px;
-    outline: none;
-}
-
-input:focus,
-select:focus {
-    border-color: #00ff88;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
 }
 
 button {
     width: 100%;
-    border: none;
-    border-radius: 10px;
-    padding: 16px;
+    padding: 15px;
     margin-top: 18px;
+    border: 0;
+    border-radius: 10px;
     background: #00ff88;
     color: #06110b;
     font-size: 17px;
     font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    filter: brightness(1.08);
-}
-
-button:active {
-    transform: scale(.98);
 }
 
 .status {
@@ -110,11 +88,11 @@ button:active {
     color: #ffd166;
 }
 
-.status.online {
+.online {
     color: #00ff88;
 }
 
-.status.error {
+.error {
     color: #ff5555;
 }
 
@@ -137,45 +115,20 @@ button:active {
     font-weight: bold;
 }
 
-.badge {
-    display: inline-block;
-    background: #202a34;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin: 8px 0;
-    font-weight: bold;
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
 }
 
 .info {
     color: #999;
     font-size: 13px;
-    line-height: 1.6;
-}
-
-.historico-item {
-    border-top: 1px solid #303942;
-    padding: 14px 0;
-    line-height: 1.7;
-}
-
-.vazio {
-    color: #888;
-}
-
-.erro-api {
-    color: #ff7777;
-    font-size: 13px;
-    white-space: pre-wrap;
-    word-break: break-word;
 }
 
 @media (max-width: 600px) {
     .grid {
         grid-template-columns: 1fr;
-    }
-
-    header h1 {
-        font-size: 24px;
     }
 }
 </style>
@@ -188,511 +141,80 @@ button:active {
     <p>Professional Strategic Betting Analyst</p>
 </header>
 
-
 <div class="container">
 
+    <div class="card">
+        <h2>📡 Sistema</h2>
 
-<!-- STATUS -->
-
-<div class="card">
-
-    <h2>📡 Sistema</h2>
-
-    <div id="status" class="status">
-        ● Verificando API...
+        <div id="status" class="status">
+            ● Verificando API...
+        </div>
     </div>
 
-</div>
+    <div class="card">
 
+        <h2>⚽ Análise EV+</h2>
 
-<!-- PARTIDA -->
+        <label>Time da casa</label>
+        <input id="casa" placeholder="Ex: Flamengo">
 
-<div class="card">
+        <label>Time visitante</label>
+        <input id="visitante" placeholder="Ex: Palmeiras">
 
-    <h2>⚽ Partida</h2>
+        <label>Mercado</label>
 
-    <label for="casa">Time da casa</label>
+        <select id="mercado">
+            <option value="">Selecione</option>
+            <option>Resultado</option>
+            <option>Over/Under gols</option>
+            <option>Ambas marcam</option>
+            <option>Autor do gol</option>
+            <option>Chute no gol</option>
+            <option>Chute de fora da área no gol</option>
+            <option>Cabeceio no gol</option>
+            <option>Escanteios</option>
+            <option>Cartões</option>
+            <option>Finalizações</option>
+        </select>
 
-    <input
-        id="casa"
-        type="text"
-        placeholder="Ex: Flamengo"
-    >
+        <label>Odd</label>
+        <input
+            id="odd"
+            type="number"
+            min="1.01"
+            step="0.01"
+            placeholder="Ex: 2.00"
+        >
 
+        <label>Probabilidade estimada (%)</label>
+        <input
+            id="probabilidade"
+            type="number"
+            min="0.1"
+            max="100"
+            step="0.1"
+            placeholder="Ex: 55"
+        >
 
-    <label for="visitante">Time visitante</label>
-
-    <input
-        id="visitante"
-        type="text"
-        placeholder="Ex: Palmeiras"
-    >
-
-
-    <label for="mercado">Mercado</label>
-
-    <select id="mercado">
-
-        <option value="">
-            Selecione o mercado
-        </option>
-
-        <option value="Resultado">
-            Resultado
-        </option>
-
-        <option value="Dupla chance">
-            Dupla chance
-        </option>
-
-        <option value="DNB">
-            DNB
-        </option>
-
-        <option value="Over/Under gols">
-            Over/Under gols
-        </option>
-
-        <option value="Ambas marcam">
-            Ambas marcam
-        </option>
-
-        <option value="Autor do gol">
-            Autor do gol
-        </option>
-
-        <option value="Chute no gol">
-            Chute no gol
-        </option>
-
-        <option value="Chute de fora da área no gol">
-            Chute de fora da área no gol
-        </option>
-
-        <option value="Cabeceio no gol">
-            Cabeceio no gol
-        </option>
-
-        <option value="Escanteios">
-            Escanteios
-        </option>
-
-        <option value="Cartões">
-            Cartões
-        </option>
-
-        <option value="Cartão de jogador">
-            Cartão de jogador
-        </option>
-
-        <option value="Finalizações">
-            Finalizações
-        </option>
-
-    </select>
-
-
-    <label for="odd">Odd disponível</label>
-
-    <input
-        id="odd"
-        type="number"
-        min="1.01"
-        step="0.01"
-        placeholder="Ex: 2.00"
-    >
-
-
-    <!-- BOTÃO PRINCIPAL -->
-
-    <button
-        id="analisar"
-        type="button"
-    >
-        🎯 ANALISAR PARTIDA
-    </button>
-
-</div>
-
-
-<!-- CONTEXTO -->
-
-<div class="card">
-
-    <h2>🧠 Contexto da partida</h2>
-
-    <div class="grid">
-
-        <div>
-
-            <label for="minuto">
-                Minuto
-            </label>
-
-            <input
-                id="minuto"
-                type="number"
-                min="0"
-                max="130"
-                placeholder="Ex: 35"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="placar">
-                Placar
-            </label>
-
-            <input
-                id="placar"
-                type="text"
-                placeholder="Ex: 1-0"
-            >
-
-        </div>
+        <button id="analisar">
+            🎯 ANALISAR EV
+        </button>
 
     </div>
 
+    <div class="card">
 
-    <label for="momento">
-        Momento
-    </label>
+        <h2>📈 Veredito</h2>
 
-    <select id="momento">
-
-        <option value="pre">
-            Pré-jogo
-        </option>
-
-        <option value="live">
-            LIVE
-        </option>
-
-    </select>
-
-</div>
-
-
-<!-- ESTATÍSTICAS -->
-
-<div class="card">
-
-    <h2>📊 Estatísticas</h2>
-
-    <p class="info">
-        Informe os dados disponíveis.
-        Campos vazios não serão inventados pelo sistema.
-    </p>
-
-
-    <div class="grid">
-
-
-        <div>
-
-            <label for="xgCasa">
-                xG Casa
-            </label>
-
-            <input
-                id="xgCasa"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Ex: 1.60"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="xgFora">
-                xG Visitante
-            </label>
-
-            <input
-                id="xgFora"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Ex: 0.90"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="xgotCasa">
-                xGOT Casa
-            </label>
-
-            <input
-                id="xgotCasa"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Ex: 1.40"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="xgotFora">
-                xGOT Visitante
-            </label>
-
-            <input
-                id="xgotFora"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Ex: 0.70"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="finalCasa">
-                Finalizações Casa
-            </label>
-
-            <input
-                id="finalCasa"
-                type="number"
-                min="0"
-                placeholder="Ex: 12"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="finalFora">
-                Finalizações Visitante
-            </label>
-
-            <input
-                id="finalFora"
-                type="number"
-                min="0"
-                placeholder="Ex: 8"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="alvoCasa">
-                Finalizações no alvo Casa
-            </label>
-
-            <input
-                id="alvoCasa"
-                type="number"
-                min="0"
-                placeholder="Ex: 5"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="alvoFora">
-                Finalizações no alvo Visitante
-            </label>
-
-            <input
-                id="alvoFora"
-                type="number"
-                min="0"
-                placeholder="Ex: 3"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="chancesCasa">
-                Grandes chances Casa
-            </label>
-
-            <input
-                id="chancesCasa"
-                type="number"
-                min="0"
-                placeholder="Ex: 3"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="chancesFora">
-                Grandes chances Visitante
-            </label>
-
-            <input
-                id="chancesFora"
-                type="number"
-                min="0"
-                placeholder="Ex: 1"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="escCasa">
-                Escanteios Casa
-            </label>
-
-            <input
-                id="escCasa"
-                type="number"
-                min="0"
-                placeholder="Ex: 4"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="escFora">
-                Escanteios Visitante
-            </label>
-
-            <input
-                id="escFora"
-                type="number"
-                min="0"
-                placeholder="Ex: 2"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="cartCasa">
-                Cartões Casa
-            </label>
-
-            <input
-                id="cartCasa"
-                type="number"
-                min="0"
-                placeholder="Ex: 1"
-            >
-
-        </div>
-
-
-        <div>
-
-            <label for="cartFora">
-                Cartões Visitante
-            </label>
-
-            <input
-                id="cartFora"
-                type="number"
-                min="0"
-                placeholder="Ex: 2"
-            >
-
-        </div>
-
-
-    </div>
-
-</div>
-
-
-<!-- RESULTADO -->
-
-<div class="card">
-
-    <h2>📈 Veredito</h2>
-
-    <div id="resultado" class="resultado">
-        Aguardando análise.
-    </div>
-
-</div>
-
-
-<!-- HISTÓRICO -->
-
-<div class="card">
-
-    <h2>📋 Histórico</h2>
-
-    <div id="historico">
-
-        <div class="vazio">
-            Nenhuma análise nesta sessão.
+        <div id="resultado" class="resultado">
+            Aguardando análise.
         </div>
 
     </div>
 
 </div>
-
-
-</div>
-
 
 <script>
-
-/* =====================================================
-   FUNÇÃO PARA PEGAR NÚMEROS
-===================================================== */
-
-function numero(id) {
-
-    const elemento =
-        document.getElementById(id);
-
-    if (!elemento) {
-        return null;
-    }
-
-    const valor =
-        elemento.value.trim();
-
-    if (valor === "") {
-        return null;
-    }
-
-    const numeroConvertido =
-        Number(valor);
-
-    if (!Number.isFinite(numeroConvertido)) {
-        return null;
-    }
-
-    return numeroConvertido;
-}
-
-
-/* =====================================================
-   TESTAR API
-===================================================== */
 
 async function testarAPI() {
 
@@ -702,12 +224,14 @@ async function testarAPI() {
     try {
 
         const resposta =
-            await fetch("/api");
+            await fetch("/api", {
+                method: "GET",
+                cache: "no-store"
+            });
 
         if (!resposta.ok) {
             throw new Error(
-                "API respondeu com erro: " +
-                resposta.status
+                "Erro HTTP " + resposta.status
             );
         }
 
@@ -725,9 +249,8 @@ async function testarAPI() {
         } else {
 
             throw new Error(
-                "Resposta inesperada da API"
+                "API respondeu de forma inesperada."
             );
-
         }
 
     } catch (erro) {
@@ -736,19 +259,12 @@ async function testarAPI() {
             "status error";
 
         status.textContent =
-            "● Erro na API";
+            "● API não conectada";
 
-        console.error(
-            "Erro ao conectar com a API:",
-            erro
-        );
+        console.error(erro);
     }
 }
 
-
-/* =====================================================
-   ANALISAR EV
-===================================================== */
 
 async function analisarEV() {
 
@@ -756,9 +272,21 @@ async function analisarEV() {
         document.getElementById("resultado");
 
     const odd =
-        numero("odd");
+        Number(
+            document.getElementById("odd").value
+        );
 
-    if (odd === null || odd <= 1) {
+    const probabilidade =
+        Number(
+            document.getElementById(
+                "probabilidade"
+            ).value
+        );
+
+    if (
+        !Number.isFinite(odd) ||
+        odd <= 1
+    ) {
 
         resultado.innerHTML =
             '<span class="negativo">' +
@@ -768,29 +296,22 @@ async function analisarEV() {
         return;
     }
 
-    const probabilidade =
-        prompt(
-            "Digite a probabilidade estimada (%)"
-        );
-
-    if (probabilidade === null) {
-        return;
-    }
-
-    const prob =
-        Number(probabilidade);
-
-    if (!Number.isFinite(prob) ||
-        prob <= 0 ||
-        prob > 100) {
+    if (
+        !Number.isFinite(probabilidade) ||
+        probabilidade <= 0 ||
+        probabilidade > 100
+    ) {
 
         resultado.innerHTML =
             '<span class="negativo">' +
-            'Probabilidade inválida.' +
+            'Informe uma probabilidade entre 0 e 100.' +
             '</span>';
 
         return;
     }
+
+    resultado.innerHTML =
+        "⏳ Calculando...";
 
     try {
 
@@ -805,8 +326,11 @@ async function analisarEV() {
                 },
 
                 body: JSON.stringify({
-                    probabilidade: prob,
-                    odd: odd
+                    probabilidade:
+                        probabilidade,
+
+                    odd:
+                        odd
                 })
             });
 
@@ -814,59 +338,67 @@ async function analisarEV() {
             await resposta.json();
 
         if (!resposta.ok) {
+
             throw new Error(
                 dados.mensagem ||
                 "Erro na API"
             );
         }
 
-        const ev =
-            dados.ev;
+        let decisao;
+        let classe;
 
-        let classe =
-            "aguarda";
-
-        let decisao =
-            "🟡 AGUARDA";
-
-        if (ev > 5) {
-
-            classe =
-                "positivo";
+        if (dados.ev > 5) {
 
             decisao =
                 "🟢 ENTRA";
 
-        } else if (ev < 0) {
+            classe =
+                "positivo";
+
+        } else if (dados.ev >= 0) {
+
+            decisao =
+                "🟡 AGUARDA";
 
             classe =
-                "negativo";
+                "aguarda";
+
+        } else {
 
             decisao =
                 "🔴 PASSA";
+
+            classe =
+                "negativo";
         }
+
+        const implicita =
+            (1 / odd) * 100;
 
         resultado.innerHTML =
 
-            "<strong>Veredito:</strong> " +
+            "<strong>Decisão:</strong> " +
             '<span class="' +
             classe +
             '">' +
             decisao +
             "</span><br><br>" +
 
-            "<strong>Probabilidade:</strong> " +
-            prob + "%<br>" +
-
             "<strong>Odd:</strong> " +
-            odd.toFixed(2) + "<br>" +
+            odd.toFixed(2) +
+            "<br>" +
+
+            "<strong>Probabilidade estimada:</strong> " +
+            probabilidade.toFixed(2) +
+            "%<br>" +
 
             "<strong>Probabilidade implícita:</strong> " +
-            (100 / odd).toFixed(2) +
+            implicita.toFixed(2) +
             "%<br>" +
 
             "<strong>EV:</strong> " +
-            ev.toFixed(2) +
+            dados.ev.toFixed(2) +
             "%<br>" +
 
             "<strong>Odd justa:</strong> " +
@@ -875,17 +407,13 @@ async function analisarEV() {
     } catch (erro) {
 
         resultado.innerHTML =
-            '<span class="erro-api">' +
-            "Erro ao consultar a API: " +
+            '<span class="negativo">' +
+            "Erro ao consultar API: " +
             erro.message +
             "</span>";
     }
 }
 
-
-/* =====================================================
-   BOTÃO ANALISAR
-===================================================== */
 
 document
     .getElementById("analisar")
@@ -895,8 +423,9 @@ document
     );
 
 
-/* =====================================================
-   INICIAR TESTE DA API
-===================================================== */
-
 testarAPI();
+
+</script>
+
+</body>
+</html>
