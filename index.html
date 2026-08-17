@@ -48,7 +48,7 @@
             padding: 12px 20px;
             border-radius: 8px;
             font-weight: bold;
-            cursor: pointer;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -77,34 +77,51 @@
         <p id="alertas">Nenhum alerta no momento.</p>
     </div>
 
-    <button onclick="atualizar()">
-        Atualizar dados
+    <button id="botao" onclick="atualizar()">
+        🔄 Atualizar dados
     </button>
 
 </div>
 
 <script>
 async function atualizar() {
+
+    const botao = document.getElementById("botao");
     const jogos = document.getElementById("jogos");
     const alertas = document.getElementById("alertas");
 
-    jogos.innerText = "Conectando ao motor...";
+    botao.innerText = "⏳ Conectando...";
+    jogos.innerText = "Consultando API...";
+    alertas.innerText = "Aguardando resposta do motor EV+...";
 
     try {
+
         const resposta = await fetch("/api");
-        const dados = await resposta.json();
 
-        if (dados.status === "online") {
-            jogos.innerText = "API conectada com sucesso";
-
-            alertas.innerText =
-                "Motor EV+ pronto para receber dados.";
-        } else {
-            jogos.innerText = "API respondeu, mas está offline";
+        if (!resposta.ok) {
+            throw new Error("API respondeu com erro");
         }
 
+        const dados = await resposta.json();
+
+        jogos.innerText = "API conectada com sucesso!";
+
+        alertas.innerText =
+            dados.mensagem || "Motor EV+ funcionando.";
+
+        botao.innerText = "✅ Dados atualizados";
+
     } catch (erro) {
-        jogos.innerText = "Erro ao conectar com a API";
-        alertas.innerText = "Verifique a conexão.";
+
+        jogos.innerText = "Erro ao conectar com a API.";
+
+        alertas.innerText =
+            "Não foi possível consultar o motor EV+.";
+
+        botao.innerText = "🔄 Tentar novamente";
     }
 }
+</script>
+
+</body>
+</html>
