@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>EV+ Futebol</title>
+<title>EV+ Futebol — Motor Estatístico</title>
 
 <style>
 
@@ -37,7 +37,7 @@ header p {
 }
 
 .container {
-    max-width: 760px;
+    max-width: 800px;
     margin: auto;
     padding: 18px;
 }
@@ -55,20 +55,26 @@ h2 {
 
 label {
     display: block;
-    margin-top: 14px;
-    margin-bottom: 7px;
+    margin-top: 13px;
+    margin-bottom: 6px;
     color: #bbb;
 }
 
 input,
 select {
     width: 100%;
-    padding: 14px;
+    padding: 13px;
     border-radius: 8px;
     border: 1px solid #444;
     background: #0b0f14;
     color: white;
     font-size: 16px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
 }
 
 button {
@@ -84,7 +90,7 @@ button {
 }
 
 button:active {
-    transform: scale(0.98);
+    transform: scale(.98);
 }
 
 .status {
@@ -111,13 +117,20 @@ button:active {
     font-weight: bold;
 }
 
-.classificacao {
+.badge {
     display: inline-block;
-    padding: 7px 12px;
-    margin: 8px 0;
-    border-radius: 7px;
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 8px;
     background: #202a34;
     font-weight: bold;
+}
+
+.info {
+    color: #999;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 10px;
 }
 
 .historico-item {
@@ -130,15 +143,12 @@ button:active {
     color: #999;
 }
 
-.risco {
-    color: #aaa;
-    font-size: 14px;
-}
+@media (max-width: 600px) {
 
-.info {
-    color: #aaa;
-    font-size: 13px;
-    line-height: 1.6;
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
 }
 
 </style>
@@ -173,12 +183,11 @@ button:active {
 </div>
 
 
-<!-- ANÁLISE -->
+<!-- PARTIDA -->
 
 <div class="card">
 
-<h2>🎯 Nova análise</h2>
-
+<h2>⚽ Partida</h2>
 
 <label>Time da casa</label>
 
@@ -188,7 +197,6 @@ button:active {
     placeholder="Ex: Flamengo"
 >
 
-
 <label>Time visitante</label>
 
 <input
@@ -197,81 +205,27 @@ button:active {
     placeholder="Ex: Palmeiras"
 >
 
-
 <label>Mercado</label>
 
 <select id="mercado">
 
-    <option value="">
-        Selecione o mercado
-    </option>
+<option value="">Selecione</option>
 
-    <option value="Resultado">
-        ⚽ Resultado
-    </option>
-
-    <option value="Dupla chance">
-        ⚽ Dupla chance
-    </option>
-
-    <option value="DNB">
-        ⚽ DNB
-    </option>
-
-    <option value="Over/Under gols">
-        ⚽ Over/Under gols
-    </option>
-
-    <option value="Ambas marcam">
-        ⚽ Ambas marcam
-    </option>
-
-    <option value="Autor do gol">
-        ⚽ Autor do gol
-    </option>
-
-    <option value="Chute no gol">
-        🎯 Chute no gol
-    </option>
-
-    <option value="Chute de fora da área no gol">
-        🎯 Chute de fora da área no gol
-    </option>
-
-    <option value="Cabeceio no gol">
-        🧠 Cabeceio no gol
-    </option>
-
-    <option value="Escanteios">
-        🚩 Escanteios
-    </option>
-
-    <option value="Cartões">
-        🟨 Cartões
-    </option>
-
-    <option value="Cartão de jogador">
-        🟨 Cartão de jogador
-    </option>
-
-    <option value="Finalizações">
-        🏃 Finalizações
-    </option>
+<option>Resultado</option>
+<option>Dupla chance</option>
+<option>DNB</option>
+<option>Over/Under gols</option>
+<option>Ambas marcam</option>
+<option>Autor do gol</option>
+<option>Chute no gol</option>
+<option>Chute de fora da área no gol</option>
+<option>Cabeceio no gol</option>
+<option>Escanteios</option>
+<option>Cartões</option>
+<option>Cartão de jogador</option>
+<option>Finalizações</option>
 
 </select>
-
-
-<label>Probabilidade estimada (%)</label>
-
-<input
-    id="probabilidade"
-    type="number"
-    min="0"
-    max="100"
-    step="0.1"
-    placeholder="Ex: 60"
->
-
 
 <label>Odd disponível</label>
 
@@ -283,17 +237,279 @@ button:active {
     placeholder="Ex: 2.00"
 >
 
+</div>
 
-<div class="info">
 
-    A probabilidade deve representar sua estimativa
-    baseada nos dados disponíveis.
+<!-- CONTEXTO -->
+
+<div class="card">
+
+<h2>🧠 Contexto da partida</h2>
+
+<div class="grid">
+
+<div>
+
+<label>Minuto</label>
+
+<input
+    id="minuto"
+    type="number"
+    min="0"
+    max="130"
+    placeholder="Ex: 35"
+>
+
+</div>
+
+<div>
+
+<label>Placar</label>
+
+<input
+    id="placar"
+    type="text"
+    placeholder="Ex: 1-0"
+>
+
+</div>
 
 </div>
 
 
+<label>Momento</label>
+
+<select id="momento">
+
+<option value="pre">Pré-jogo</option>
+<option value="live">LIVE</option>
+
+</select>
+
+</div>
+
+
+<!-- ESTATÍSTICAS -->
+
+<div class="card">
+
+<h2>📊 Estatísticas</h2>
+
+<p class="info">
+Preencha somente os dados que você realmente possui.
+Campos vazios não serão tratados como dados.
+</p>
+
+
+<div class="grid">
+
+<div>
+
+<label>xG Casa</label>
+
+<input
+    id="xgCasa"
+    type="number"
+    step="0.01"
+    min="0"
+    placeholder="Ex: 1.60"
+>
+
+</div>
+
+<div>
+
+<label>xG Visitante</label>
+
+<input
+    id="xgFora"
+    type="number"
+    step="0.01"
+    min="0"
+    placeholder="Ex: 0.90"
+>
+
+</div>
+
+
+<div>
+
+<label>xGOT Casa</label>
+
+<input
+    id="xgotCasa"
+    type="number"
+    step="0.01"
+    min="0"
+    placeholder="Ex: 1.40"
+>
+
+</div>
+
+<div>
+
+<label>xGOT Visitante</label>
+
+<input
+    id="xgotFora"
+    type="number"
+    step="0.01"
+    min="0"
+    placeholder="Ex: 0.70"
+>
+
+</div>
+
+
+<div>
+
+<label>Finalizações Casa</label>
+
+<input
+    id="finalCasa"
+    type="number"
+    min="0"
+    placeholder="Ex: 12"
+>
+
+</div>
+
+<div>
+
+<label>Finalizações Visitante</label>
+
+<input
+    id="finalFora"
+    type="number"
+    min="0"
+    placeholder="Ex: 8"
+>
+
+</div>
+
+
+<div>
+
+<label>Finalizações no alvo Casa</label>
+
+<input
+    id="alvoCasa"
+    type="number"
+    min="0"
+    placeholder="Ex: 5"
+>
+
+</div>
+
+<div>
+
+<label>Finalizações no alvo Visitante</label>
+
+<input
+    id="alvoFora"
+    type="number"
+    min="0"
+    placeholder="Ex: 3"
+>
+
+</div>
+
+
+<div>
+
+<label>Grandes chances Casa</label>
+
+<input
+    id="chancesCasa"
+    type="number"
+    min="0"
+    placeholder="Ex: 3"
+>
+
+</div>
+
+<div>
+
+<label>Grandes chances Visitante</label>
+
+<input
+    id="chancesFora"
+    type="number"
+    min="0"
+    placeholder="Ex: 1"
+>
+
+</div>
+
+
+<div>
+
+<label>Escanteios Casa</label>
+
+<input
+    id="escCasa"
+    type="number"
+    min="0"
+    placeholder="Ex: 4"
+>
+
+</div>
+
+<div>
+
+<label>Escanteios Visitante</label>
+
+<input
+    id="escFora"
+    type="number"
+    min="0"
+    placeholder="Ex: 2"
+>
+
+</div>
+
+
+<div>
+
+<label>Cartões Casa</label>
+
+<input
+    id="cartCasa"
+    type="number"
+    min="0"
+    placeholder="Ex: 1"
+>
+
+</div>
+
+<div>
+
+<label>Cartões Visitante</label>
+
+<input
+    id="cartFora"
+    type="number"
+    min="0"
+    placeholder="Ex: 2"
+>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ANÁLISE -->
+
+<div class="card">
+
+<h2>🧮 Motor EV+</h2>
+
 <button id="analisar">
-🎯 ANALISAR EV+
+
+🎯 ANALISAR PARTIDA
+
 </button>
 
 </div>
@@ -303,11 +519,11 @@ button:active {
 
 <div class="card">
 
-<h2>📊 Resultado</h2>
+<h2>📈 Veredito</h2>
 
 <div id="resultado" class="resultado">
 
-Preencha os dados da análise.
+Aguardando análise.
 
 </div>
 
@@ -323,7 +539,7 @@ Preencha os dados da análise.
 <div id="historico">
 
 <div class="vazio">
-Nenhuma análise realizada nesta sessão.
+Nenhuma análise nesta sessão.
 </div>
 
 </div>
@@ -337,12 +553,9 @@ Nenhuma análise realizada nesta sessão.
 <script>
 
 
-let historico = [];
-
-
-/* =========================
-   TESTE DA API
-========================= */
+/* ================================
+   API
+================================ */
 
 async function testarAPI() {
 
@@ -382,36 +595,323 @@ async function testarAPI() {
 }
 
 
-/* =========================
-   CLASSIFICAÇÃO
-========================= */
+/* ================================
+   LEITURA DE CAMPO
+================================ */
 
-function classificarAposta(ev, probabilidade) {
+function numero(id) {
+
+    const valor =
+        document
+        .getElementById(id)
+        .value;
+
+    if (valor === "") {
+        return null;
+    }
+
+    const n = Number(valor);
+
+    return Number.isFinite(n) ? n : null;
+
+}
+
+
+/* ================================
+   MODELO ESTATÍSTICO
+================================ */
+
+function calcularModelo() {
+
+
+    const xgCasa = numero("xgCasa");
+    const xgFora = numero("xgFora");
+
+    const xgotCasa = numero("xgotCasa");
+    const xgotFora = numero("xgotFora");
+
+    const finalCasa = numero("finalCasa");
+    const finalFora = numero("finalFora");
+
+    const alvoCasa = numero("alvoCasa");
+    const alvoFora = numero("alvoFora");
+
+    const chancesCasa = numero("chancesCasa");
+    const chancesFora = numero("chancesFora");
+
+    const escCasa = numero("escCasa");
+    const escFora = numero("escFora");
+
+    const cartCasa = numero("cartCasa");
+    const cartFora = numero("cartFora");
+
+
+    let sinais = [];
+
+    let pontos = 50;
+
+    let quantidade = 0;
+
+
+    /* xG */
+
+    if (
+        xgCasa !== null &&
+        xgFora !== null
+    ) {
+
+        const total = xgCasa + xgFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (xgCasa / total) - 0.5;
+
+            pontos += vantagem * 20;
+
+            quantidade++;
+
+            sinais.push(
+                "xG disponível"
+            );
+
+        }
+
+    }
+
+
+    /* xGOT */
+
+    if (
+        xgotCasa !== null &&
+        xgotFora !== null
+    ) {
+
+        const total =
+            xgotCasa + xgotFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (xgotCasa / total) - 0.5;
+
+            pontos += vantagem * 15;
+
+            quantidade++;
+
+            sinais.push(
+                "xGOT disponível"
+            );
+
+        }
+
+    }
+
+
+    /* FINALIZAÇÕES */
+
+    if (
+        finalCasa !== null &&
+        finalFora !== null
+    ) {
+
+        const total =
+            finalCasa + finalFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (finalCasa / total) - 0.5;
+
+            pontos += vantagem * 8;
+
+            quantidade++;
+
+            sinais.push(
+                "Finalizações disponíveis"
+            );
+
+        }
+
+    }
+
+
+    /* NO ALVO */
+
+    if (
+        alvoCasa !== null &&
+        alvoFora !== null
+    ) {
+
+        const total =
+            alvoCasa + alvoFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (alvoCasa / total) - 0.5;
+
+            pontos += vantagem * 12;
+
+            quantidade++;
+
+            sinais.push(
+                "Finalizações no alvo disponíveis"
+            );
+
+        }
+
+    }
+
+
+    /* GRANDES CHANCES */
+
+    if (
+        chancesCasa !== null &&
+        chancesFora !== null
+    ) {
+
+        const total =
+            chancesCasa + chancesFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (chancesCasa / total) - 0.5;
+
+            pontos += vantagem * 15;
+
+            quantidade++;
+
+            sinais.push(
+                "Grandes chances disponíveis"
+            );
+
+        }
+
+    }
+
+
+    /* ESCANTEIOS */
+
+    if (
+        escCasa !== null &&
+        escFora !== null
+    ) {
+
+        const total =
+            escCasa + escFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (escCasa / total) - 0.5;
+
+            pontos += vantagem * 5;
+
+            quantidade++;
+
+            sinais.push(
+                "Escanteios disponíveis"
+            );
+
+        }
+
+    }
+
+
+    /* CARTÕES */
+
+    if (
+        cartCasa !== null &&
+        cartFora !== null
+    ) {
+
+        const total =
+            cartCasa + cartFora;
+
+        if (total > 0) {
+
+            const vantagem =
+                (cartCasa / total) - 0.5;
+
+            pontos += vantagem * 3;
+
+            quantidade++;
+
+            sinais.push(
+                "Cartões disponíveis"
+            );
+
+        }
+
+    }
+
 
     /*
-       Critério inicial:
-
-       A:
-       EV >= 10%
-       e probabilidade >= 55%
-
-       B:
-       EV >= 5%
-
-       C:
-       EV positivo abaixo disso
-
-       EV negativo:
-       PASSA
+       Se houver poucos dados,
+       não fabricar confiança.
     */
 
-
-    if (ev >= 10 && probabilidade >= 55) {
+    if (quantidade === 0) {
 
         return {
-            classe: "A",
-            nome: "A — ALTA CONFIANÇA / MELHOR EV",
-            decisao: "ENTRA"
+            probabilidade: null,
+            quantidade: 0,
+            sinais: []
+        };
+
+    }
+
+
+    /*
+       Limite conservador.
+    */
+
+    pontos =
+        Math.max(
+            5,
+            Math.min(
+                95,
+                pontos
+            )
+        );
+
+
+    return {
+
+        probabilidade:
+            Number(pontos.toFixed(2)),
+
+        quantidade:
+            quantidade,
+
+        sinais:
+            sinais
+
+    };
+
+}
+
+
+/* ================================
+   CLASSIFICAÇÃO
+================================ */
+
+function classificar(ev, prob) {
+
+
+    if (
+        ev >= 10 &&
+        prob >= 55
+    ) {
+
+        return {
+            letra: "A",
+            nome:
+                "A — ALTA CONFIANÇA / MELHOR EV",
+            decisao:
+                "ENTRA"
         };
 
     }
@@ -420,12 +920,101 @@ function classificarAposta(ev, probabilidade) {
     if (ev >= 5) {
 
         return {
-            classe: "B",
-            nome: "B — BOA OPORTUNIDADE / VALOR MODERADO",
-            decisao: "ENTRA"
+            letra: "B",
+            nome:
+                "B — BOA OPORTUNIDADE / VALOR MODERADO",
+            decisao:
+                "ENTRA"
         };
 
     }
 
 
-    if (ev
+    if (ev > 0) {
+
+        return {
+            letra: "C",
+            nome:
+                "C — EXPLORATÓRIA / MAIOR VARIÂNCIA",
+            decisao:
+                "ENTRA"
+        };
+
+    }
+
+
+    return {
+        letra: "-",
+        nome:
+            "SEM VALOR",
+        decisao:
+            "PASSA"
+    };
+
+}
+
+
+/* ================================
+   HISTÓRICO
+================================ */
+
+let historico = [];
+
+
+function mostrarHistorico() {
+
+
+    const elemento =
+        document
+        .getElementById("historico");
+
+
+    if (
+        historico.length === 0
+    ) {
+
+        elemento.innerHTML =
+            '<div class="vazio">' +
+            'Nenhuma análise nesta sessão.' +
+            '</div>';
+
+        return;
+
+    }
+
+
+    elemento.innerHTML =
+
+        historico
+        .map(function(item) {
+
+            const cor =
+                item.ev > 0
+                ? "positivo"
+                : "negativo";
+
+
+            return `
+
+            <div class="historico-item">
+
+                <strong>
+                    ${item.casa}
+                    🆚
+                    ${item.visitante}
+                </strong>
+
+                <br>
+
+                Mercado:
+                ${item.mercado}
+
+                <br>
+
+                Odd:
+                ${item.odd}
+
+                <br>
+
+                Probabilidade:
+               
