@@ -14,7 +14,7 @@
 body {
     margin: 0;
     background: #0b0f14;
-    color: white;
+    color: #fff;
     font-family: Arial, sans-serif;
 }
 
@@ -81,6 +81,11 @@ button {
     color: #06110b;
     font-size: 17px;
     font-weight: bold;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(.98);
 }
 
 .status {
@@ -97,7 +102,7 @@ button {
 }
 
 .resultado {
-    line-height: 1.8;
+    line-height: 1.9;
 }
 
 .positivo {
@@ -115,20 +120,9 @@ button {
     font-weight: bold;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.info {
-    color: #999;
-    font-size: 13px;
-}
-
 @media (max-width: 600px) {
-    .grid {
-        grid-template-columns: 1fr;
+    header h1 {
+        font-size: 24px;
     }
 }
 </style>
@@ -155,29 +149,82 @@ button {
 
         <h2>⚽ Análise EV+</h2>
 
-        <label>Time da casa</label>
-        <input id="casa" placeholder="Ex: Flamengo">
+        <label for="casa">
+            Time da casa
+        </label>
 
-        <label>Time visitante</label>
-        <input id="visitante" placeholder="Ex: Palmeiras">
+        <input
+            id="casa"
+            type="text"
+            placeholder="Ex: Flamengo"
+        >
 
-        <label>Mercado</label>
+        <label for="visitante">
+            Time visitante
+        </label>
+
+        <input
+            id="visitante"
+            type="text"
+            placeholder="Ex: Palmeiras"
+        >
+
+        <label for="mercado">
+            Mercado
+        </label>
 
         <select id="mercado">
-            <option value="">Selecione</option>
-            <option>Resultado</option>
-            <option>Over/Under gols</option>
-            <option>Ambas marcam</option>
-            <option>Autor do gol</option>
-            <option>Chute no gol</option>
-            <option>Chute de fora da área no gol</option>
-            <option>Cabeceio no gol</option>
-            <option>Escanteios</option>
-            <option>Cartões</option>
-            <option>Finalizações</option>
+
+            <option value="">
+                Selecione
+            </option>
+
+            <option value="Resultado">
+                Resultado
+            </option>
+
+            <option value="Over/Under gols">
+                Over/Under gols
+            </option>
+
+            <option value="Ambas marcam">
+                Ambas marcam
+            </option>
+
+            <option value="Autor do gol">
+                Autor do gol
+            </option>
+
+            <option value="Chute no gol">
+                Chute no gol
+            </option>
+
+            <option value="Chute de fora da área no gol">
+                Chute de fora da área no gol
+            </option>
+
+            <option value="Cabeceio no gol">
+                Cabeceio no gol
+            </option>
+
+            <option value="Escanteios">
+                Escanteios
+            </option>
+
+            <option value="Cartões">
+                Cartões
+            </option>
+
+            <option value="Finalizações">
+                Finalizações
+            </option>
+
         </select>
 
-        <label>Odd</label>
+        <label for="odd">
+            Odd disponível
+        </label>
+
         <input
             id="odd"
             type="number"
@@ -186,7 +233,10 @@ button {
             placeholder="Ex: 2.00"
         >
 
-        <label>Probabilidade estimada (%)</label>
+        <label for="probabilidade">
+            Probabilidade estimada (%)
+        </label>
+
         <input
             id="probabilidade"
             type="number"
@@ -196,7 +246,26 @@ button {
             placeholder="Ex: 55"
         >
 
-        <button id="analisar">
+        <label for="momento">
+            Momento
+        </label>
+
+        <select id="momento">
+
+            <option value="pre">
+                Pré-jogo
+            </option>
+
+            <option value="live">
+                LIVE
+            </option>
+
+        </select>
+
+        <button
+            id="analisar"
+            type="button"
+        >
             🎯 ANALISAR EV
         </button>
 
@@ -206,7 +275,10 @@ button {
 
         <h2>📈 Veredito</h2>
 
-        <div id="resultado" class="resultado">
+        <div
+            id="resultado"
+            class="resultado"
+        >
             Aguardando análise.
         </div>
 
@@ -230,15 +302,20 @@ async function testarAPI() {
             });
 
         if (!resposta.ok) {
+
             throw new Error(
-                "Erro HTTP " + resposta.status
+                "Erro HTTP " +
+                resposta.status
             );
+
         }
 
         const dados =
             await resposta.json();
 
-        if (dados.status === "online") {
+        if (
+            dados.status === "online"
+        ) {
 
             status.className =
                 "status online";
@@ -249,8 +326,9 @@ async function testarAPI() {
         } else {
 
             throw new Error(
-                "API respondeu de forma inesperada."
+                "Resposta inesperada da API."
             );
+
         }
 
     } catch (erro) {
@@ -262,6 +340,7 @@ async function testarAPI() {
             "● API não conectada";
 
         console.error(erro);
+
     }
 }
 
@@ -269,11 +348,15 @@ async function testarAPI() {
 async function analisarEV() {
 
     const resultado =
-        document.getElementById("resultado");
+        document.getElementById(
+            "resultado"
+        );
 
     const odd =
         Number(
-            document.getElementById("odd").value
+            document.getElementById(
+                "odd"
+            ).value
         );
 
     const probabilidade =
@@ -282,6 +365,12 @@ async function analisarEV() {
                 "probabilidade"
             ).value
         );
+
+    const momento =
+        document.getElementById(
+            "momento"
+        ).value;
+
 
     if (
         !Number.isFinite(odd) ||
@@ -295,6 +384,7 @@ async function analisarEV() {
 
         return;
     }
+
 
     if (
         !Number.isFinite(probabilidade) ||
@@ -310,8 +400,10 @@ async function analisarEV() {
         return;
     }
 
+
     resultado.innerHTML =
         "⏳ Calculando...";
+
 
     try {
 
@@ -326,16 +418,24 @@ async function analisarEV() {
                 },
 
                 body: JSON.stringify({
+
                     probabilidade:
                         probabilidade,
 
                     odd:
-                        odd
+                        odd,
+
+                    momento:
+                        momento
+
                 })
+
             });
+
 
         const dados =
             await resposta.json();
+
 
         if (!resposta.ok) {
 
@@ -343,66 +443,108 @@ async function analisarEV() {
                 dados.mensagem ||
                 "Erro na API"
             );
+
         }
 
-        let decisao;
-        let classe;
 
-        if (dados.ev > 5) {
+        let classe =
+            "aguarda";
 
-            decisao =
-                "🟢 ENTRA";
+
+        if (
+            dados.decisao ===
+            "ENTRA"
+        ) {
 
             classe =
                 "positivo";
 
-        } else if (dados.ev >= 0) {
-
-            decisao =
-                "🟡 AGUARDA";
-
-            classe =
-                "aguarda";
-
-        } else {
-
-            decisao =
-                "🔴 PASSA";
+        } else if (
+            dados.decisao ===
+            "PASSA"
+        ) {
 
             classe =
                 "negativo";
+
         }
 
-        const implicita =
-            (1 / odd) * 100;
+
+        const simbolo =
+            dados.decisao === "ENTRA"
+                ? "🟢"
+                : dados.decisao === "PASSA"
+                ? "🔴"
+                : "🟡";
+
 
         resultado.innerHTML =
 
             "<strong>Decisão:</strong> " +
+
             '<span class="' +
             classe +
             '">' +
-            decisao +
+
+            simbolo +
+            " " +
+            dados.decisao +
+
             "</span><br><br>" +
 
             "<strong>Odd:</strong> " +
-            odd.toFixed(2) +
+            Number(dados.odd).toFixed(2) +
+
             "<br>" +
 
             "<strong>Probabilidade estimada:</strong> " +
-            probabilidade.toFixed(2) +
-            "%<br>" +
+            Number(
+                dados.probabilidade_estimada
+            ).toFixed(2) +
+            "%" +
+
+            "<br>" +
 
             "<strong>Probabilidade implícita:</strong> " +
-            implicita.toFixed(2) +
-            "%<br>" +
+            Number(
+                dados.probabilidade_implicita
+            ).toFixed(2) +
+            "%" +
+
+            "<br>" +
 
             "<strong>EV:</strong> " +
-            dados.ev.toFixed(2) +
-            "%<br>" +
+            Number(
+                dados.ev
+            ).toFixed(2) +
+            "%" +
+
+            "<br>" +
 
             "<strong>Odd justa:</strong> " +
-            dados.valor_justo;
+            Number(
+                dados.odd_justa
+            ).toFixed(2) +
+
+            "<br>" +
+
+            "<strong>Classificação:</strong> " +
+            dados.classificacao +
+
+            "<br>" +
+
+            "<strong>Banca:</strong> R$ " +
+            Number(
+                dados.banca
+            ).toFixed(2) +
+
+            "<br>" +
+
+            "<strong>Stake recomendada:</strong> R$ " +
+            Number(
+                dados.stake_recomendada
+            ).toFixed(2);
+
 
     } catch (erro) {
 
@@ -411,7 +553,9 @@ async function analisarEV() {
             "Erro ao consultar API: " +
             erro.message +
             "</span>";
+
     }
+
 }
 
 
