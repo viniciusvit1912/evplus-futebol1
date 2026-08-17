@@ -26,7 +26,7 @@
 
         .container {
             padding: 20px;
-            max-width: 900px;
+            max-width: 700px;
             margin: auto;
         }
 
@@ -37,18 +37,41 @@
             margin-bottom: 15px;
         }
 
-        .status {
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            margin: 8px 0 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0b0f14;
+            color: white;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            background: #00ff88;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .resultado {
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .positivo {
             color: #00ff88;
             font-weight: bold;
         }
 
-        button {
-            background: #00ff88;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+        .negativo {
+            color: #ff5555;
             font-weight: bold;
-            font-size: 16px;
         }
     </style>
 </head>
@@ -57,70 +80,136 @@
 
 <header>
     <h1>⚽ EV+ FUTEBOL</h1>
-    <p>Dashboard de análise</p>
+    <p>Calculadora de Valor Esperado</p>
 </header>
 
 <div class="container">
 
     <div class="card">
-        <h2>📊 Status do sistema</h2>
-        <p class="status">● Sistema online</p>
+
+        <h2>🎯 Calcular EV</h2>
+
+        <label>Probabilidade estimada (%)</label>
+
+        <input
+            id="probabilidade"
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            placeholder="Ex: 60"
+        >
+
+        <label>Odd</label>
+
+        <input
+            id="odd"
+            type="number"
+            min="1"
+            step="0.01"
+            placeholder="Ex: 2.00"
+        >
+
+        <button onclick="calcularEV()">
+            🧮 CALCULAR EV
+        </button>
+
     </div>
 
     <div class="card">
-        <h2>🎯 Jogos analisados</h2>
-        <p id="jogos">0 jogos</p>
-    </div>
 
-    <div class="card">
-        <h2>🚨 Alertas</h2>
-        <p id="alertas">Nenhum alerta no momento.</p>
-    </div>
+        <h2>📊 Resultado</h2>
 
-    <button id="botao" onclick="atualizar()">
-        🔄 Atualizar dados
-    </button>
+        <div id="resultado" class="resultado">
+            Informe a probabilidade e a odd.
+        </div>
+
+    </div>
 
 </div>
 
 <script>
-async function atualizar() {
 
-    const botao = document.getElementById("botao");
-    const jogos = document.getElementById("jogos");
-    const alertas = document.getElementById("alertas");
+async function calcularEV() {
 
-    botao.innerText = "⏳ Conectando...";
-    jogos.innerText = "Consultando API...";
-    alertas.innerText = "Aguardando resposta do motor EV+...";
+    const probabilidade =
+        parseFloat(document.getElementById("probabilidade").value);
+
+    const odd =
+        parseFloat(document.getElementById("odd").value);
+
+    const resultado =
+        document.getElementById("resultado");
+
+    if (
+        isNaN(probabilidade) ||
+        isNaN(odd) ||
+        probabilidade <= 0 ||
+        probabilidade >= 100 ||
+        odd <= 1
+    ) {
+
+        resultado.innerHTML =
+            "⚠️ Informe uma probabilidade entre 0 e 100 e uma odd maior que 1.";
+
+        return;
+    }
+
+    resultado.innerHTML = "⏳ Calculando...";
 
     try {
 
-        const resposta = await fetch("/api");
+        const resposta = await fetch("/api", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                probabilidade: probabilidade,
+                odd: odd
+            })
+
+        });
 
         if (!resposta.ok) {
-            throw new Error("API respondeu com erro");
+            throw new Error("Erro na API");
         }
 
         const dados = await resposta.json();
 
-        jogos.innerText = "API conectada com sucesso!";
+        let classificacao;
 
-        alertas.innerText =
-            dados.mensagem || "Motor EV+ funcionando.";
+        if (dados.ev > 0) {
 
-        botao.innerText = "✅ Dados atualizados";
+            classificacao =
+                `<span class="positivo">🟢 VALOR POSITIVO</span>`;
+
+        } else {
+
+            classificacao =
+                `<span class="negativo">🔴 VALOR NEGATIVO</span>`;
+
+        }
+
+        resultado.innerHTML = `
+            Probabilidade: <strong>${dados.probabilidade}%</strong><br>
+            Odd: <strong>${dados.odd}</strong><br>
+            EV: <strong>${dados.ev}%</strong><br>
+            Odd justa: <strong>${dados.valor_justo}</strong><br><br>
+            ${classificacao}
+        `;
 
     } catch (erro) {
 
-        jogos.innerText = "Erro ao conectar com a API.";
+        resultado.innerHTML =
+            "❌ Não foi possível calcular. Verifique a API.";
 
-        alertas.innerText =
-            "Não foi possível consultar o motor EV+.";
-
-        botao.innerText = "🔄 Tentar novamente";
     }
 }
+
 </script>
 
 </body>
