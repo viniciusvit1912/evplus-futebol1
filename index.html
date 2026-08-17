@@ -1,160 +1,127 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EV+ Futebol</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV+ Futebol</title>
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0f14;
-    color: white;
-}
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b0f14;
+            color: white;
+        }
 
-header {
-    padding: 22px;
-    text-align: center;
-    background: #111820;
-}
+        header {
+            padding: 20px;
+            background: #111820;
+            text-align: center;
+        }
 
-h1 {
-    color: #00ff88;
-}
+        h1 {
+            margin: 0;
+            color: #00ff88;
+        }
 
-.container {
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
-}
+        .container {
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+        }
 
-.card {
-    background: #151d26;
-    padding: 20px;
-    margin-bottom: 18px;
-    border-radius: 14px;
-}
+        .card {
+            background: #151d26;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
 
-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 14px;
-    margin: 8px 0 15px;
-    border-radius: 8px;
-    border: 1px solid #444;
-    background: #0b0f14;
-    color: white;
-    font-size: 16px;
-}
+        .status {
+            color: #00ff88;
+            font-weight: bold;
+        }
 
-button {
-    width: 100%;
-    padding: 15px;
-    border: 0;
-    border-radius: 8px;
-    background: #00ff88;
-    font-weight: bold;
-    font-size: 16px;
-}
-
-#resultado {
-    line-height: 1.8;
-}
-</style>
+        button {
+            background: #00ff88;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
 
 <header>
-<h1>⚽ EV+ FUTEBOL</h1>
-<p>Motor de análise</p>
+    <h1>⚽ EV+ FUTEBOL</h1>
+    <p>Dashboard de análise</p>
 </header>
 
 <div class="container">
 
-<div class="card">
+    <div class="card">
+        <h2>📊 Status do sistema</h2>
+        <p class="status">● Sistema online</p>
+    </div>
 
-<h2>🎯 Nova análise</h2>
+    <div class="card">
+        <h2>🎯 Jogos analisados</h2>
+        <p id="jogos">0 jogos</p>
+    </div>
 
-<input id="casa" placeholder="Time da casa">
+    <div class="card">
+        <h2>🚨 Alertas</h2>
+        <p id="alertas">Nenhum alerta no momento.</p>
+    </div>
 
-<input id="visitante" placeholder="Time visitante">
-
-<input id="mercado" placeholder="Mercado">
-
-<input id="probabilidade" type="number" placeholder="Probabilidade (%)">
-
-<input id="odd" type="number" step="0.01" placeholder="Odd">
-
-<button id="analisar">🎯 ANALISAR PARTIDA</button>
-
-</div>
-
-<div class="card">
-
-<h2>📊 Resultado</h2>
-
-<div id="resultado">
-Preencha os dados e toque em analisar.
-</div>
-
-</div>
+    <button onclick="atualizar()">
+        Atualizar dados
+    </button>
 
 </div>
 
 <script>
 
-document.getElementById("analisar").addEventListener("click", async function() {
+async function atualizar() {
 
-    const resultado = document.getElementById("resultado");
+    const jogos = document.getElementById("jogos");
+    const alertas = document.getElementById("alertas");
 
-    resultado.innerHTML = "⏳ Analisando...";
-
-    const probabilidade = Number(
-        document.getElementById("probabilidade").value
-    );
-
-    const odd = Number(
-        document.getElementById("odd").value
-    );
-
-    if (!probabilidade || !odd) {
-        resultado.innerHTML =
-            "⚠️ Informe a probabilidade e a odd.";
-        return;
-    }
+    jogos.innerText = "Conectando ao motor...";
 
     try {
 
-        const resposta = await fetch("/api", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                probabilidade: probabilidade,
-                odd: odd
-            })
-        });
+        const resposta = await fetch("/api");
 
         const dados = await resposta.json();
 
-        resultado.innerHTML =
-            "✅ API respondeu!<br><br>" +
-            "Probabilidade: " + dados.probabilidade + "%<br>" +
-            "Odd: " + dados.odd + "<br>" +
-            "EV: " + dados.ev + "%<br>" +
-            "Odd justa: " + dados.valor_justo;
+        if (dados.status === "online") {
+
+            jogos.innerText = "API conectada com sucesso";
+
+            alertas.innerText =
+                "Motor EV+ pronto para receber dados.";
+
+        } else {
+
+            jogos.innerText =
+                "API respondeu, mas está offline";
+
+        }
 
     } catch (erro) {
 
-        resultado.innerHTML =
-            "❌ Erro ao conectar com a API.";
+        jogos.innerText =
+            "Erro ao conectar com a API";
+
+        alertas.innerText =
+            "Verifique a conexão.";
 
     }
-
-});
+}
 
 </script>
 
