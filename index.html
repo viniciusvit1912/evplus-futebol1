@@ -3,35 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EV+ Teste</title>
+
+<title>EV+ Futebol</title>
 
 <style>
+
 body {
     margin: 0;
-    padding: 20px;
     font-family: Arial, sans-serif;
     background: #0b0f14;
     color: white;
 }
 
-.card {
-    max-width: 500px;
-    margin: auto;
-    background: #151d26;
-    padding: 20px;
-    border-radius: 15px;
+header {
+    background: #111820;
+    padding: 22px;
+    text-align: center;
 }
 
-h1 {
+header h1 {
+    margin: 0;
     color: #00ff88;
-    text-align: center;
+}
+
+header p {
+    color: #aaa;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+    padding: 18px;
+}
+
+.card {
+    background: #151d26;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    color: #bbb;
 }
 
 input {
     width: 100%;
     box-sizing: border-box;
     padding: 14px;
-    margin: 8px 0 15px;
+    margin-top: 7px;
     border-radius: 8px;
     border: 1px solid #444;
     background: #0b0f14;
@@ -42,143 +64,567 @@ input {
 button {
     width: 100%;
     padding: 15px;
+    margin-top: 18px;
     border: 0;
     border-radius: 8px;
     background: #00ff88;
+    color: #07100b;
     font-weight: bold;
     font-size: 16px;
 }
 
-#resultado {
-    margin-top: 20px;
-    padding: 15px;
-    line-height: 1.8;
+button:active {
+    transform: scale(0.98);
 }
+
+.resultado {
+    line-height: 1.9;
+}
+
+.positivo {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.negativo {
+    color: #ff5555;
+    font-weight: bold;
+}
+
+.historico-item {
+    border-top: 1px solid #333;
+    padding: 15px 0;
+    line-height: 1.7;
+}
+
+.vazio {
+    color: #999;
+}
+
+.status {
+    color: #00ff88;
+    font-weight: bold;
+}
+
 </style>
 </head>
 
+
 <body>
 
-<div class="card">
+
+<header>
 
 <h1>⚽ EV+ FUTEBOL</h1>
 
-<p>Teste do motor de cálculo</p>
+<p>Dashboard de análise de valor esperado</p>
 
-<label>Probabilidade (%)</label>
+</header>
+
+
+<div class="container">
+
+
+<!-- STATUS -->
+
+<div class="card">
+
+<h2>📡 Sistema</h2>
+
+<div id="status" class="status">
+● Verificando API...
+</div>
+
+</div>
+
+
+<!-- NOVA ANÁLISE -->
+
+<div class="card">
+
+<h2>🎯 Nova análise</h2>
+
+
+<label>Time da casa</label>
+
+<input
+    id="casa"
+    type="text"
+    placeholder="Ex: Flamengo"
+>
+
+
+<label>Time visitante</label>
+
+<input
+    id="visitante"
+    type="text"
+    placeholder="Ex: Palmeiras"
+>
+
+
+<label>Mercado</label>
+
+<input
+    id="mercado"
+    type="text"
+    placeholder="Ex: Mais de 2.5 gols"
+>
+
+
+<label>Probabilidade estimada (%)</label>
 
 <input
     id="probabilidade"
     type="number"
+    min="0"
+    max="100"
+    step="0.1"
     placeholder="Ex: 60"
 >
+
 
 <label>Odd</label>
 
 <input
     id="odd"
     type="number"
+    min="1.01"
     step="0.01"
     placeholder="Ex: 2.00"
 >
 
-<button id="calcular">
-🧮 CALCULAR EV
+
+<button id="analisar">
+🎯 ANALISAR PARTIDA
 </button>
 
-<div id="resultado">
-Aguardando dados...
+</div>
+
+
+<!-- RESULTADO -->
+
+<div class="card">
+
+<h2>📊 Resultado</h2>
+
+<div id="resultado" class="resultado">
+
+Preencha os dados da partida.
+
 </div>
 
 </div>
+
+
+<!-- HISTÓRICO -->
+
+<div class="card">
+
+<h2>📋 Histórico de análises</h2>
+
+<div id="historico">
+
+<div class="vazio">
+Nenhuma análise realizada nesta sessão.
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
 
 <script>
 
+
+let historico = [];
+
+
+/* TESTAR API */
+
+async function testarAPI() {
+
+    const status =
+        document.getElementById("status");
+
+    try {
+
+        const resposta =
+            await fetch("/api");
+
+        const dados =
+            await resposta.json();
+
+        if (
+            resposta.ok &&
+            dados.status === "online"
+        ) {
+
+            status.innerText =
+                "● API conectada";
+
+        } else {
+
+            status.innerText =
+                "● API respondeu com erro";
+
+        }
+
+    } catch (erro) {
+
+        status.innerText =
+            "● API offline";
+
+    }
+
+}
+
+
+/* ANALISAR */
+
 document
-.getElementById("calcular")
+.getElementById("analisar")
 .addEventListener("click", async function() {
+
 
     const resultado =
         document.getElementById("resultado");
 
+
+    const casa =
+        document
+        .getElementById("casa")
+        .value
+        .trim();
+
+
+    const visitante =
+        document
+        .getElementById("visitante")
+        .value
+        .trim();
+
+
+    const mercado =
+        document
+        .getElementById("mercado")
+        .value
+        .trim();
+
+
     const probabilidade =
         Number(
-            document.getElementById("probabilidade").value
+            document
+            .getElementById("probabilidade")
+            .value
         );
+
 
     const odd =
         Number(
-            document.getElementById("odd").value
+            document
+            .getElementById("odd")
+            .value
         );
 
-    if (!probabilidade || !odd) {
+
+    /* VALIDAÇÃO */
+
+    if (
+        !casa ||
+        !visitante ||
+        !mercado
+    ) {
 
         resultado.innerHTML =
-            "⚠️ Preencha os dois campos.";
+            "⚠️ Preencha os times e o mercado.";
 
         return;
+
     }
 
+
+    if (
+        !probabilidade ||
+        probabilidade <= 0 ||
+        probabilidade >= 100
+    ) {
+
+        resultado.innerHTML =
+            "⚠️ Informe uma probabilidade entre 0 e 100.";
+
+        return;
+
+    }
+
+
+    if (
+        !odd ||
+        odd <= 1
+    ) {
+
+        resultado.innerHTML =
+            "⚠️ Informe uma odd maior que 1.";
+
+        return;
+
+    }
+
+
     resultado.innerHTML =
-        "⏳ Calculando...";
+        "⏳ Calculando EV...";
+
 
     try {
 
-        const resposta = await fetch("/api", {
 
-            method: "POST",
+        const resposta =
+            await fetch("/api", {
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+                method: "POST",
 
-            body: JSON.stringify({
-                probabilidade: probabilidade,
-                odd: odd
-            })
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-        });
+                body: JSON.stringify({
+
+                    probabilidade:
+                        probabilidade,
+
+                    odd:
+                        odd
+
+                })
+
+            });
+
 
         const dados =
             await resposta.json();
+
 
         if (!resposta.ok) {
 
             resultado.innerHTML =
                 "❌ Erro: " +
-                (dados.mensagem || "API");
+                (
+                    dados.mensagem ||
+                    "API"
+                );
 
             return;
+
         }
+
+
+        /* CLASSIFICAÇÃO */
+
+        let classificacao;
+
+
+        if (dados.ev > 0) {
+
+            classificacao =
+                '<span class="positivo">' +
+                '🟢 VALOR POSITIVO' +
+                '</span>';
+
+        } else {
+
+            classificacao =
+                '<span class="negativo">' +
+                '🔴 VALOR NEGATIVO' +
+                '</span>';
+
+        }
+
+
+        /* RESULTADO */
 
         resultado.innerHTML =
 
-            "✅ Cálculo realizado!<br><br>" +
+            "<strong>" +
+            casa +
+            "</strong> 🆚 <strong>" +
+            visitante +
+            "</strong>" +
+
+            "<br><br>" +
+
+            "Mercado: <strong>" +
+            mercado +
+            "</strong>" +
+
+            "<br>" +
 
             "Probabilidade: <strong>" +
             dados.probabilidade +
-            "%</strong><br>" +
+            "%</strong>" +
+
+            "<br>" +
 
             "Odd: <strong>" +
             dados.odd +
-            "</strong><br>" +
+            "</strong>" +
+
+            "<br>" +
 
             "EV: <strong>" +
             dados.ev +
-            "%</strong><br>" +
+            "%</strong>" +
+
+            "<br>" +
 
             "Odd justa: <strong>" +
             dados.valor_justo +
-            "</strong>";
+            "</strong>" +
+
+            "<br><br>" +
+
+            classificacao;
+
+
+        /* SALVAR HISTÓRICO */
+
+        historico.unshift({
+
+            casa:
+                casa,
+
+            visitante:
+                visitante,
+
+            mercado:
+                mercado,
+
+            probabilidade:
+                dados.probabilidade,
+
+            odd:
+                dados.odd,
+
+            ev:
+                dados.ev,
+
+            valorJusto:
+                dados.valor_justo
+
+        });
+
+
+        /* LIMITAR HISTÓRICO */
+
+        if (historico.length > 10) {
+
+            historico.pop();
+
+        }
+
+
+        mostrarHistorico();
+
 
     } catch (erro) {
 
         resultado.innerHTML =
-            "❌ Falha na comunicação com a API.";
+            "❌ Falha ao comunicar com a API.";
 
     }
 
 });
+
+
+/* HISTÓRICO */
+
+function mostrarHistorico() {
+
+
+    const elemento =
+        document
+        .getElementById("historico");
+
+
+    if (historico.length === 0) {
+
+        elemento.innerHTML =
+            '<div class="vazio">' +
+            'Nenhuma análise realizada nesta sessão.' +
+            '</div>';
+
+        return;
+
+    }
+
+
+    elemento.innerHTML =
+
+        historico
+        .map(function(item) {
+
+
+            const classe =
+                item.ev > 0
+                ? "positivo"
+                : "negativo";
+
+
+            return `
+
+                <div class="historico-item">
+
+                    <strong>
+                        ${item.casa}
+                        🆚
+                        ${item.visitante}
+                    </strong>
+
+                    <br>
+
+                    Mercado:
+                    ${item.mercado}
+
+                    <br>
+
+                    Probabilidade:
+                    ${item.probabilidade}%
+
+                    <br>
+
+                    Odd:
+                    ${item.odd}
+
+                    <br>
+
+                    EV:
+                    <span class="${classe}">
+                        ${item.ev}%
+                    </span>
+
+                    <br>
+
+                    Odd justa:
+                    ${item.valorJusto}
+
+                </div>
+
+            `;
+
+
+        })
+        .join("");
+
+}
+
+
+/* INICIAR */
+
+testarAPI();
+
 
 </script>
 
