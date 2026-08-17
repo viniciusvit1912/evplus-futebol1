@@ -1,9 +1,10 @@
 from http.server import BaseHTTPRequestHandler
 import json
+import math
 
 
 # =========================================================
-# BANCA
+# EV+ FUTEBOL — MOTOR DE GOLS v4
 # =========================================================
 
 BANCA_PRE_JOGO = 25.00
@@ -11,29 +12,27 @@ BANCA_LIVE = 12.00
 
 STAKE_PADRAO = 0.02
 STAKE_MAXIMA = 0.03
-STAKE_EXPLORATORIA = 0.50
 
 
 class handler(BaseHTTPRequestHandler):
 
     # =====================================================
-    # GET — TESTE DA API
+    # GET
     # =====================================================
 
     def do_GET(self):
 
-        resposta = {
+        self.enviar(200, {
             "status": "online",
             "sistema": "EV+ Futebol",
-            "versao": "3.0",
+            "versao": "4.0",
+            "motor": "Gols",
             "mensagem": "Motor EV+ funcionando"
-        }
-
-        self.enviar(200, resposta)
+        })
 
 
     # =====================================================
-    # POST — MOTOR EV+
+    # POST
     # =====================================================
 
     def do_POST(self):
@@ -53,15 +52,11 @@ class handler(BaseHTTPRequestHandler):
                 corpo.decode("utf-8")
             )
 
-            # -------------------------------------------------
-            # DADOS PRINCIPAIS
-            # -------------------------------------------------
-
             odd = self.numero(
                 dados.get("odd")
             )
 
-            probabilidade = self.numero(
+            prob_manual = self.numero(
                 dados.get("probabilidade")
             )
 
@@ -90,10 +85,9 @@ class handler(BaseHTTPRequestHandler):
                 )
             )
 
-
-            # -------------------------------------------------
+            # =================================================
             # VALIDAÇÃO
-            # -------------------------------------------------
+            # =================================================
 
             if odd is None or odd <= 1:
 
@@ -102,9 +96,9 @@ class handler(BaseHTTPRequestHandler):
                 )
 
             if (
-                probabilidade is None
-                or probabilidade <= 0
-                or probabilidade > 100
+                prob_manual is None
+                or prob_manual <= 0
+                or prob_manual > 100
             ):
 
                 raise ValueError(
@@ -112,9 +106,9 @@ class handler(BaseHTTPRequestHandler):
                 )
 
 
-            # -------------------------------------------------
+            # =================================================
             # ESTATÍSTICAS
-            # -------------------------------------------------
+            # =================================================
 
             xg_casa = self.numero(
                 dados.get("xgCasa")
@@ -156,32 +150,66 @@ class handler(BaseHTTPRequestHandler):
                 dados.get("chancesFora")
             )
 
-            esc_casa = self.numero(
-                dados.get("escCasa")
-            )
 
-            esc_fora = self.numero(
-                dados.get("escFora")
-            )
+            # =================================================
+            # MOTOR DE GOLS
+            # =================================================
 
-            cart_casa = self.numero(
-                dados.get("cartCasa")
-            )
-
-            cart_fora = self.numero(
-                dados.get("cartFora")
+            prob_modelo = self.modelo_gols(
+                momento=momento,
+                minuto=minuto,
+                placar=placar,
+                xg_casa=xg_casa,
+                xg_fora=xg_fora,
+                xgot_casa=xgot_casa,
+                xgot_fora=xgot_fora,
+                final_casa=final_casa,
+                final_fora=final_fora,
+                alvo_casa=alvo_casa,
+                alvo_fora=alvo_fora,
+                chances_casa=chances_casa,
+                chances_fora=chances_fora
             )
 
 
             # =================================================
-            # PROBABILIDADE / EV
+            # PROBABILIDADE FINAL
+            # =================================================
+
+            if prob_modelo is not None:
+
+                # A probabilidade manual continua tendo
+                # peso maior nesta primeira versão.
+
+                probabilidade = (
+                    prob_manual * 0.70
+                    +
+                    prob_modelo * 0.30
+                )
+
+            else:
+
+                probabilidade = prob_manual
+
+
+            probabilidade = max(
+                1,
+                min(
+                    99,
+                    probabilidade
+                )
+            )
+
+
+            # =================================================
+            # EV
             # =================================================
 
             prob = (
                 probabilidade / 100
             )
 
-            probabilidade_implicita = (
+            prob_implicita = (
                 1 / odd
             ) * 100
 
@@ -189,9 +217,7 @@ class handler(BaseHTTPRequestHandler):
                 prob * odd
             ) - 1
 
-            ev_percentual = (
-                ev * 100
-            )
+            ev_percentual = ev * 100
 
             odd_justa = (
                 1 / prob
@@ -206,17 +232,11 @@ class handler(BaseHTTPRequestHandler):
                 momento=momento,
                 minuto=minuto,
                 mercado=mercado,
-                ev=ev_percentual,
+                prob_modelo=prob_modelo,
                 xg_casa=xg_casa,
                 xg_fora=xg_fora,
                 final_casa=final_casa,
-                final_fora=final_fora,
-                alvo_casa=alvo_casa,
-                alvo_fora=alvo_fora,
-                esc_casa=esc_casa,
-                esc_fora=esc_fora,
-                cart_casa=cart_casa,
-                cart_fora=cart_fora
+                final_fora=final_fora
             )
 
 
@@ -224,7 +244,7 @@ class handler(BaseHTTPRequestHandler):
             # DECISÃO
             # =================================================
 
-            decisao = self.definir_decisao(
+            decisao = self.decisao(
                 ev_percentual,
                 risco
             )
@@ -234,7 +254,7 @@ class handler(BaseHTTPRequestHandler):
             # CLASSIFICAÇÃO
             # =================================================
 
-            classificacao = self.definir_classificacao(
+            classificacao = self.classificacao(
                 ev_percentual,
                 risco,
                 decisao
@@ -262,25 +282,24 @@ class handler(BaseHTTPRequestHandler):
 
             if decisao == "ENTRA":
 
-                if classificacao == "A":
+                stake = banca * STAKE_PADRAO
 
-                    stake = banca * STAKE_PADRAO
+                limite = (
+                    banca *
+                    STAKE_MAXIMA
+                )
 
-                elif classificacao == "B":
+                stake = min(
+                    stake,
+                    limite
+                )
 
-                    stake = banca * STAKE_PADRAO
+            else:
 
-                else:
-
-                    stake = STAKE_EXPLORATORIA
-
-            # Nunca ultrapassar 3% automaticamente
-
-            limite = banca * STAKE_MAXIMA
-
-            if stake > limite:
-
-                stake = limite
+                limite = (
+                    banca *
+                    STAKE_MAXIMA
+                )
 
 
             stake = round(
@@ -293,9 +312,10 @@ class handler(BaseHTTPRequestHandler):
             # MOTIVOS
             # =================================================
 
-            motivos = self.gerar_motivos(
-                mercado=mercado,
-                momento=momento,
+            motivos = self.motivos(
+                prob_manual=prob_manual,
+                prob_modelo=prob_modelo,
+                prob_final=probabilidade,
                 ev=ev_percentual,
                 risco=risco,
                 xg_casa=xg_casa,
@@ -307,11 +327,7 @@ class handler(BaseHTTPRequestHandler):
                 alvo_casa=alvo_casa,
                 alvo_fora=alvo_fora,
                 chances_casa=chances_casa,
-                chances_fora=chances_fora,
-                esc_casa=esc_casa,
-                esc_fora=esc_fora,
-                cart_casa=cart_casa,
-                cart_fora=cart_fora
+                chances_fora=chances_fora
             )
 
 
@@ -323,75 +339,76 @@ class handler(BaseHTTPRequestHandler):
 
                 "status": "ok",
 
-                "versao": "3.0",
+                "versao": "4.0",
+
+                "motor": "gols",
 
                 "decisao": decisao,
 
-                "classificacao":
-                    classificacao,
+                "classificacao": classificacao,
 
-                "risco":
-                    risco,
+                "risco": risco,
 
-                "mercado":
-                    mercado,
+                "mercado": mercado,
 
-                "momento":
-                    momento,
+                "momento": momento,
 
-                "minuto":
-                    minuto,
+                "minuto": minuto,
 
-                "placar":
-                    placar,
+                "placar": placar,
 
-                "odd":
+                "odd": round(
+                    odd,
+                    2
+                ),
+
+                "probabilidade_manual": round(
+                    prob_manual,
+                    2
+                ),
+
+                "probabilidade_modelo": (
                     round(
-                        odd,
+                        prob_modelo,
                         2
-                    ),
+                    )
+                    if prob_modelo is not None
+                    else None
+                ),
 
-                "probabilidade_estimada":
-                    round(
-                        probabilidade,
-                        2
-                    ),
+                "probabilidade_estimada": round(
+                    probabilidade,
+                    2
+                ),
 
-                "probabilidade_implicita":
-                    round(
-                        probabilidade_implicita,
-                        2
-                    ),
+                "probabilidade_implicita": round(
+                    prob_implicita,
+                    2
+                ),
 
-                "ev":
-                    round(
-                        ev_percentual,
-                        2
-                    ),
+                "ev": round(
+                    ev_percentual,
+                    2
+                ),
 
-                "odd_justa":
-                    round(
-                        odd_justa,
-                        2
-                    ),
+                "odd_justa": round(
+                    odd_justa,
+                    2
+                ),
 
-                "banca":
-                    round(
-                        banca,
-                        2
-                    ),
+                "banca": round(
+                    banca,
+                    2
+                ),
 
-                "stake_recomendada":
-                    stake,
+                "stake_recomendada": stake,
 
-                "stake_maxima":
-                    round(
-                        limite,
-                        2
-                    ),
+                "stake_maxima": round(
+                    limite,
+                    2
+                ),
 
-                "motivos":
-                    motivos
+                "motivos": motivos
 
             }
 
@@ -414,29 +431,253 @@ class handler(BaseHTTPRequestHandler):
 
 
     # =====================================================
-    # CONVERTER NÚMEROS
+    # MOTOR ESTATÍSTICO DE GOLS
     # =====================================================
 
-    def numero(self, valor):
+    def modelo_gols(
+        self,
+        momento,
+        minuto,
+        placar,
+        xg_casa,
+        xg_fora,
+        xgot_casa,
+        xgot_fora,
+        final_casa,
+        final_fora,
+        alvo_casa,
+        alvo_fora,
+        chances_casa,
+        chances_fora
+    ):
 
-        if valor is None:
+        valores = []
+
+        # -------------------------------------------------
+        # xG
+        # -------------------------------------------------
+
+        if (
+            xg_casa is not None
+            and xg_fora is not None
+        ):
+
+            total_xg = (
+                xg_casa +
+                xg_fora
+            )
+
+            valores.append(
+                self.prob_over25_xg(
+                    total_xg
+                )
+            )
+
+
+        # -------------------------------------------------
+        # xGOT
+        # -------------------------------------------------
+
+        if (
+            xgot_casa is not None
+            and xgot_fora is not None
+        ):
+
+            total_xgot = (
+                xgot_casa +
+                xgot_fora
+            )
+
+            valores.append(
+                self.prob_over25_xg(
+                    total_xgot
+                )
+            )
+
+
+        # -------------------------------------------------
+        # VOLUME DE FINALIZAÇÕES
+        # -------------------------------------------------
+
+        if (
+            final_casa is not None
+            and final_fora is not None
+        ):
+
+            total_final = (
+                final_casa +
+                final_fora
+            )
+
+            if total_final >= 25:
+
+                valores.append(65)
+
+            elif total_final >= 20:
+
+                valores.append(58)
+
+            elif total_final >= 15:
+
+                valores.append(52)
+
+            elif total_final >= 10:
+
+                valores.append(45)
+
+
+        # -------------------------------------------------
+        # CHUTES NO ALVO
+        # -------------------------------------------------
+
+        if (
+            alvo_casa is not None
+            and alvo_fora is not None
+        ):
+
+            total_alvo = (
+                alvo_casa +
+                alvo_fora
+            )
+
+            if total_alvo >= 8:
+
+                valores.append(68)
+
+            elif total_alvo >= 6:
+
+                valores.append(60)
+
+            elif total_alvo >= 4:
+
+                valores.append(53)
+
+            elif total_alvo >= 2:
+
+                valores.append(46)
+
+
+        # -------------------------------------------------
+        # GRANDES CHANCES
+        # -------------------------------------------------
+
+        if (
+            chances_casa is not None
+            and chances_fora is not None
+        ):
+
+            total_chances = (
+                chances_casa +
+                chances_fora
+            )
+
+            if total_chances >= 4:
+
+                valores.append(70)
+
+            elif total_chances >= 3:
+
+                valores.append(62)
+
+            elif total_chances >= 2:
+
+                valores.append(54)
+
+            elif total_chances >= 1:
+
+                valores.append(47)
+
+
+        if not valores:
+
             return None
 
-        if valor == "":
-            return None
 
-        try:
+        # -------------------------------------------------
+        # MÉDIA DO MODELO
+        # -------------------------------------------------
 
-            numero = float(valor)
+        prob = sum(valores) / len(valores)
 
-            if numero < 0:
-                return None
 
-            return numero
+        # -------------------------------------------------
+        # AJUSTE LIVE
+        # -------------------------------------------------
 
-        except:
+        if momento == "live":
 
-            return None
+            minuto_num = (
+                minuto
+                if minuto is not None
+                else 0
+            )
+
+            # No segundo tempo, a interpretação do
+            # volume muda conforme o tempo restante.
+
+            if minuto_num >= 75:
+
+                prob -= 5
+
+            elif minuto_num >= 60:
+
+                prob -= 2
+
+
+        return max(
+            5,
+            min(
+                95,
+                prob
+            )
+        )
+
+
+    # =====================================================
+    # CONVERSÃO xG → PROBABILIDADE OVER 2.5
+    # =====================================================
+
+    def prob_over25_xg(
+        self,
+        xg
+    ):
+
+        if xg <= 0:
+
+            return 5
+
+
+        # Distribuição de Poisson.
+        # P(X > 2) = 1 - P(0) - P(1) - P(2)
+
+        p0 = math.exp(-xg)
+
+        p1 = (
+            p0 *
+            xg
+        )
+
+        p2 = (
+            p1 *
+            xg /
+            2
+        )
+
+        prob = (
+            1 -
+            p0 -
+            p1 -
+            p2
+        ) * 100
+
+
+        return max(
+            5,
+            min(
+                95,
+                prob
+            )
+        )
 
 
     # =====================================================
@@ -448,90 +689,68 @@ class handler(BaseHTTPRequestHandler):
         momento,
         minuto,
         mercado,
-        ev,
+        prob_modelo,
         xg_casa,
         xg_fora,
         final_casa,
-        final_fora,
-        alvo_casa,
-        alvo_fora,
-        esc_casa,
-        esc_fora,
-        cart_casa,
-        cart_fora
+        final_fora
     ):
 
         pontos = 0
 
 
-        # EV negativo aumenta risco
+        if prob_modelo is None:
 
-        if ev < 0:
-            pontos += 3
-
-        elif ev < 3:
             pontos += 2
 
-        elif ev < 5:
-            pontos += 1
-
-
-        # LIVE sem dados suficientes
 
         if momento == "live":
 
-            dados = [
-                xg_casa,
-                xg_fora,
-                final_casa,
-                final_fora
-            ]
+            if minuto is None:
 
-            disponiveis = sum(
-                x is not None
-                for x in dados
-            )
+                pontos += 1
 
-            if disponiveis < 2:
-                pontos += 2
+            if (
+                xg_casa is None
+                or xg_fora is None
+            ):
+
+                pontos += 1
 
 
-        # Mercados naturalmente mais voláteis
+        if "over" in mercado.lower():
 
-        mercados_variancia = [
-            "autor do gol",
-            "cabeceio no gol",
-            "chute de fora da área no gol"
-        ]
+            if (
+                xg_casa is not None
+                and xg_fora is not None
+            ):
 
-        mercado_lower = mercado.lower()
+                total_xg = (
+                    xg_casa +
+                    xg_fora
+                )
 
-        if any(
-            item in mercado_lower
-            for item in mercados_variancia
-        ):
+                if total_xg < 0.80:
 
-            pontos += 1
+                    pontos += 2
 
 
         if pontos >= 4:
 
             return "ALTO"
 
-        elif pontos >= 2:
+        if pontos >= 2:
 
             return "MÉDIO"
 
-        else:
-
-            return "BAIXO"
+        return "BAIXO"
 
 
     # =====================================================
     # DECISÃO
     # =====================================================
 
-    def definir_decisao(
+    def decisao(
         self,
         ev,
         risco
@@ -547,7 +766,10 @@ class handler(BaseHTTPRequestHandler):
             return "AGUARDA"
 
 
-        if risco == "ALTO" and ev < 8:
+        if (
+            risco == "ALTO"
+            and ev < 8
+        ):
 
             return "AGUARDA"
 
@@ -564,7 +786,7 @@ class handler(BaseHTTPRequestHandler):
     # CLASSIFICAÇÃO
     # =====================================================
 
-    def definir_classificacao(
+    def classificacao(
         self,
         ev,
         risco,
@@ -596,10 +818,11 @@ class handler(BaseHTTPRequestHandler):
     # MOTIVOS
     # =====================================================
 
-    def gerar_motivos(
+    def motivos(
         self,
-        mercado,
-        momento,
+        prob_manual,
+        prob_modelo,
+        prob_final,
         ev,
         risco,
         xg_casa,
@@ -611,173 +834,124 @@ class handler(BaseHTTPRequestHandler):
         alvo_casa,
         alvo_fora,
         chances_casa,
-        chances_fora,
-        esc_casa,
-        esc_fora,
-        cart_casa,
-        cart_fora
+        chances_fora
     ):
 
-        motivos = []
+        lista = []
 
 
-        # EV
+        lista.append(
+            "Probabilidade final combina "
+            "a estimativa informada com o "
+            "modelo estatístico."
+        )
 
-        if ev > 0:
 
-            motivos.append(
-                "O preço apresenta EV positivo."
+        if prob_modelo is not None:
+
+            lista.append(
+                f"Probabilidade calculada pelo "
+                f"modelo: {prob_modelo:.2f}%."
             )
 
-        elif ev == 0:
-
-            motivos.append(
-                "O preço está próximo do valor justo."
-            )
-
-        else:
-
-            motivos.append(
-                "O preço não apresenta EV positivo."
-            )
-
-
-        # xG
 
         if (
             xg_casa is not None
             and xg_fora is not None
         ):
 
-            total_xg = (
-                xg_casa +
-                xg_fora
+            lista.append(
+                f"xG total: "
+                f"{xg_casa + xg_fora:.2f}."
             )
 
-            motivos.append(
-                f"xG informado no jogo: {total_xg:.2f}."
-            )
-
-
-        # xGOT
 
         if (
             xgot_casa is not None
             and xgot_fora is not None
         ):
 
-            total_xgot = (
-                xgot_casa +
-                xgot_fora
+            lista.append(
+                f"xGOT total: "
+                f"{xgot_casa + xgot_fora:.2f}."
             )
 
-            motivos.append(
-                f"xGOT informado: {total_xgot:.2f}."
-            )
-
-
-        # Finalizações
 
         if (
             final_casa is not None
             and final_fora is not None
         ):
 
-            total_finalizacoes = (
-                final_casa +
-                final_fora
+            lista.append(
+                f"Finalizações totais: "
+                f"{final_casa + final_fora:.0f}."
             )
 
-            motivos.append(
-                "Volume total de finalizações informado: "
-                f"{total_finalizacoes:.0f}."
-            )
-
-
-        # Chutes no alvo
 
         if (
             alvo_casa is not None
             and alvo_fora is not None
         ):
 
-            total_alvo = (
-                alvo_casa +
-                alvo_fora
+            lista.append(
+                f"Finalizações no alvo: "
+                f"{alvo_casa + alvo_fora:.0f}."
             )
 
-            motivos.append(
-                "Finalizações no alvo: "
-                f"{total_alvo:.0f}."
-            )
-
-
-        # Grandes chances
 
         if (
             chances_casa is not None
             and chances_fora is not None
         ):
 
-            total_chances = (
-                chances_casa +
-                chances_fora
-            )
-
-            motivos.append(
-                "Grandes chances registradas: "
-                f"{total_chances:.0f}."
+            lista.append(
+                f"Grandes chances: "
+                f"{chances_casa + chances_fora:.0f}."
             )
 
 
-        # Escanteios
+        lista.append(
+            f"EV calculado: {ev:.2f}%."
+        )
 
-        if (
-            esc_casa is not None
-            and esc_fora is not None
-        ):
-
-            total_escanteios = (
-                esc_casa +
-                esc_fora
-            )
-
-            motivos.append(
-                "Escanteios registrados: "
-                f"{total_escanteios:.0f}."
-            )
-
-
-        # Cartões
-
-        if (
-            cart_casa is not None
-            and cart_fora is not None
-        ):
-
-            total_cartoes = (
-                cart_casa +
-                cart_fora
-            )
-
-            motivos.append(
-                "Cartões registrados: "
-                f"{total_cartoes:.0f}."
-            )
-
-
-        # Risco
-
-        motivos.append(
-            f"Nível de risco calculado: {risco}."
+        lista.append(
+            f"Risco: {risco}."
         )
 
 
-        return motivos
+        return lista
 
 
     # =====================================================
-    # RESPOSTA HTTP
+    # NÚMERO
+    # =====================================================
+
+    def numero(
+        self,
+        valor
+    ):
+
+        if value_empty(valor):
+
+            return None
+
+        try:
+
+            numero = float(valor)
+
+            if numero < 0:
+
+                return None
+
+            return numero
+
+        except:
+
+            return None
+
+
+    # =====================================================
+    # HTTP
     # =====================================================
 
     def enviar(
@@ -795,26 +969,4 @@ class handler(BaseHTTPRequestHandler):
             "application/json"
         )
 
-        self.send_header(
-            "Access-Control-Allow-Origin",
-            "*"
-        )
-
-        self.send_header(
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS"
-        )
-
-        self.send_header(
-            "Access-Control-Allow-Headers",
-            "Content-Type"
-        )
-
-        self.end_headers()
-
-        self.wfile.write(
-            json.dumps(
-                dados,
-                ensure_ascii=False
-            ).encode("utf-8")
-        )
+        self.send_heade
