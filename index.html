@@ -1,84 +1,162 @@
-from http.server import BaseHTTPRequestHandler
-import json
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV+ Futebol</title>
 
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0f14;
+    color: white;
+}
 
-class handler(BaseHTTPRequestHandler):
+header {
+    padding: 22px;
+    text-align: center;
+    background: #111820;
+}
 
-    def do_GET(self):
-        resposta = {
-            "status": "online",
-            "sistema": "EV+ Futebol",
-            "mensagem": "API funcionando"
-        }
+h1 {
+    color: #00ff88;
+}
 
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
+.container {
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+}
 
-        self.wfile.write(
-            json.dumps(resposta).encode("utf-8")
-        )
+.card {
+    background: #151d26;
+    padding: 20px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+}
 
-    def do_POST(self):
-        try:
-            tamanho = int(
-                self.headers.get("Content-Length", 0)
-            )
+input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    margin: 8px 0 15px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #0b0f14;
+    color: white;
+    font-size: 16px;
+}
 
-            corpo = self.rfile.read(tamanho)
+button {
+    width: 100%;
+    padding: 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #00ff88;
+    font-weight: bold;
+    font-size: 16px;
+}
 
-            dados = json.loads(
-                corpo.decode("utf-8")
-            )
+#resultado {
+    line-height: 1.8;
+}
+</style>
+</head>
 
-            probabilidade = float(
-                dados["probabilidade"]
-            )
+<body>
 
-            odd = float(
-                dados["odd"]
-            )
+<header>
+<h1>⚽ EV+ FUTEBOL</h1>
+<p>Motor de análise</p>
+</header>
 
-            prob = probabilidade / 100
+<div class="container">
 
-            ev = (prob * odd) - 1
+<div class="card">
 
-            valor_justo = 1 / prob
+<h2>🎯 Nova análise</h2>
 
-            resposta = {
-                "status": "ok",
-                "probabilidade": probabilidade,
-                "odd": odd,
-                "ev": round(ev * 100, 2),
-                "valor_justo": round(valor_justo, 2)
-            }
+<input id="casa" placeholder="Time da casa">
 
-            codigo = 200
+<input id="visitante" placeholder="Time visitante">
 
-        except Exception as erro:
+<input id="mercado" placeholder="Mercado">
 
-            resposta = {
-                "status": "erro",
-                "mensagem": str(erro)
-            }
+<input id="probabilidade" type="number" placeholder="Probabilidade (%)">
 
-            codigo = 400
+<input id="odd" type="number" step="0.01" placeholder="Odd">
 
-        self.send_response(codigo)
+<button id="analisar">🎯 ANALISAR PARTIDA</button>
 
-        self.send_header(
-            "Content-Type",
-            "application/json"
-        )
+</div>
 
-        self.send_header(
-            "Access-Control-Allow-Origin",
-            "*"
-        )
+<div class="card">
 
-        self.end_headers()
+<h2>📊 Resultado</h2>
 
-        self.wfile.write(
-            json.dumps(resposta).encode("utf-8")
-        )
+<div id="resultado">
+Preencha os dados e toque em analisar.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+document.getElementById("analisar").addEventListener("click", async function() {
+
+    const resultado = document.getElementById("resultado");
+
+    resultado.innerHTML = "⏳ Analisando...";
+
+    const probabilidade = Number(
+        document.getElementById("probabilidade").value
+    );
+
+    const odd = Number(
+        document.getElementById("odd").value
+    );
+
+    if (!probabilidade || !odd) {
+        resultado.innerHTML =
+            "⚠️ Informe a probabilidade e a odd.";
+        return;
+    }
+
+    try {
+
+        const resposta = await fetch("/api", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                probabilidade: probabilidade,
+                odd: odd
+            })
+        });
+
+        const dados = await resposta.json();
+
+        resultado.innerHTML =
+            "✅ API respondeu!<br><br>" +
+            "Probabilidade: " + dados.probabilidade + "%<br>" +
+            "Odd: " + dados.odd + "<br>" +
+            "EV: " + dados.ev + "%<br>" +
+            "Odd justa: " + dados.valor_justo;
+
+    } catch (erro) {
+
+        resultado.innerHTML =
+            "❌ Erro ao conectar com a API.";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
