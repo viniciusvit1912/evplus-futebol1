@@ -84,14 +84,27 @@
 </div>
 
 <script>
-function atualizar() {
-    document.getElementById("jogos").innerText =
-        "Sistema preparado para analisar jogos";
+async function atualizar() {
+    const jogos = document.getElementById("jogos");
+    const alertas = document.getElementById("alertas");
 
-    document.getElementById("alertas").innerText =
-        "Aguardando dados das partidas...";
+    jogos.innerText = "Conectando ao motor...";
+
+    try {
+        const resposta = await fetch("/api");
+        const dados = await resposta.json();
+
+        if (dados.status === "online") {
+            jogos.innerText = "API conectada com sucesso";
+
+            alertas.innerText =
+                "Motor EV+ pronto para receber dados.";
+        } else {
+            jogos.innerText = "API respondeu, mas está offline";
+        }
+
+    } catch (erro) {
+        jogos.innerText = "Erro ao conectar com a API";
+        alertas.innerText = "Verifique a conexão.";
+    }
 }
-</script>
-
-</body>
-</html>
