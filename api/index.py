@@ -60,21 +60,21 @@ class handler(BaseHTTPRequestHandler):
             {
                 "status": "online",
                 "sistema": "EV+ Futebol",
-                "versao": "5.0",
+                "versao": "5.1",
                 "motor": "EV+",
                 "mensagem": "API funcionando"
             }
         )
 
 
-    def do_POST:
+    def do_POST(self):
 
         try:
 
             tamanho = int(
                 self.headers.get(
                     "Content-Length",
-                    0
+                    "0"
                 )
             )
 
@@ -94,11 +94,31 @@ class handler(BaseHTTPRequestHandler):
                 dados.get("probabilidade")
             )
 
+            momento = str(
+                dados.get(
+                    "momento",
+                    "pre"
+                )
+            ).lower()
+
+            mercado = str(
+                dados.get(
+                    "mercado",
+                    ""
+                )
+            )
+
+
+            # ==============================
+            # VALIDAÇÃO
+            # ==============================
+
             if odd <= 1:
 
                 raise ValueError(
                     "A odd deve ser maior que 1."
                 )
+
 
             if (
                 probabilidade <= 0
@@ -110,24 +130,45 @@ class handler(BaseHTTPRequestHandler):
                 )
 
 
-            prob = probabilidade / 100
+            # ==============================
+            # PROBABILIDADE
+            # ==============================
+
+            prob = (
+                probabilidade / 100
+            )
+
+
+            # ==============================
+            # PROBABILIDADE IMPLÍCITA
+            # ==============================
 
             prob_implicita = (
                 1 / odd
             ) * 100
 
+
+            # ==============================
+            # EV
+            # ==============================
+
             ev = (
                 prob * odd - 1
             ) * 100
+
+
+            # ==============================
+            # ODD JUSTA
+            # ==============================
 
             odd_justa = (
                 1 / prob
             )
 
 
-            # =========================
-            # VEREDITO EV+
-            # =========================
+            # ==============================
+            # DECISÃO EV+
+            # ==============================
 
             if ev < 0:
 
@@ -155,17 +196,9 @@ class handler(BaseHTTPRequestHandler):
                 classificacao = "A"
 
 
-            momento = str(
-                dados.get(
-                    "momento",
-                    "pre"
-                )
-            ).lower()
-
-
-            # =========================
+            # ==============================
             # BANCA
-            # =========================
+            # ==============================
 
             if momento == "live":
 
@@ -176,9 +209,9 @@ class handler(BaseHTTPRequestHandler):
                 banca = 25.00
 
 
-            # =========================
+            # ==============================
             # STAKE
-            # =========================
+            # ==============================
 
             if decisao == "ENTRA":
 
@@ -189,13 +222,22 @@ class handler(BaseHTTPRequestHandler):
                 stake = 0.00
 
 
+            stake_maxima = (
+                banca * 0.03
+            )
+
+
+            # ==============================
+            # RESPOSTA
+            # ==============================
+
             resposta = {
 
                 "status": "ok",
 
                 "sistema": "EV+ Futebol",
 
-                "versao": "5.0",
+                "versao": "5.1",
 
                 "decisao": decisao,
 
@@ -239,20 +281,20 @@ class handler(BaseHTTPRequestHandler):
                 ),
 
                 "stake_maxima": round(
-                    banca * 0.03,
+                    stake_maxima,
                     2
                 ),
 
-                "mercado": dados.get(
-                    "mercado",
-                    ""
-                ),
+                "mercado": mercado,
 
                 "momento": momento,
 
                 "motivos": [
 
                     "Cálculo EV realizado pelo motor EV+.",
+
+                    f"Probabilidade estimada: "
+                    f"{probabilidade:.2f}%.",
 
                     f"Probabilidade implícita: "
                     f"{prob_implicita:.2f}%.",
