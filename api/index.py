@@ -2,7 +2,23 @@ from http.server import BaseHTTPRequestHandler
 import json
 
 
+# =========================================================
+# EV+ FUTEBOL — API BASE ESTÁVEL
+# =========================================================
+
+
+BANCA_PRE_JOGO = 25.00
+BANCA_LIVE = 12.00
+
+STAKE_PADRAO = 0.02
+STAKE_MAXIMA = 0.03
+
+
 class handler(BaseHTTPRequestHandler):
+
+    # =====================================================
+    # RESPOSTA HTTP
+    # =====================================================
 
     def enviar(self, codigo, dados):
 
@@ -43,6 +59,10 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(corpo)
 
 
+    # =====================================================
+    # OPTIONS
+    # =====================================================
+
     def do_OPTIONS(self):
 
         self.enviar(
@@ -53,6 +73,10 @@ class handler(BaseHTTPRequestHandler):
         )
 
 
+    # =====================================================
+    # GET — TESTE DA API
+    # =====================================================
+
     def do_GET(self):
 
         self.enviar(
@@ -60,12 +84,16 @@ class handler(BaseHTTPRequestHandler):
             {
                 "status": "online",
                 "sistema": "EV+ Futebol",
-                "versao": "5.1",
+                "versao": "5.2",
                 "motor": "EV+",
                 "mensagem": "API funcionando"
             }
         )
 
+
+    # =====================================================
+    # POST — ANÁLISE
+    # =====================================================
 
     def do_POST(self):
 
@@ -86,12 +114,30 @@ class handler(BaseHTTPRequestHandler):
                 corpo.decode("utf-8")
             )
 
-            odd = float(
-                dados.get("odd")
+
+            # =================================================
+            # DADOS PRINCIPAIS
+            # =================================================
+
+            casa = str(
+                dados.get(
+                    "casa",
+                    ""
+                )
             )
 
-            probabilidade = float(
-                dados.get("probabilidade")
+            visitante = str(
+                dados.get(
+                    "visitante",
+                    ""
+                )
+            )
+
+            mercado = str(
+                dados.get(
+                    "mercado",
+                    ""
+                )
             )
 
             momento = str(
@@ -101,17 +147,23 @@ class handler(BaseHTTPRequestHandler):
                 )
             ).lower()
 
-            mercado = str(
-                dados.get(
-                    "mercado",
-                    ""
-                )
+
+            # =================================================
+            # DADOS DA APOSTA
+            # =================================================
+
+            odd = float(
+                dados.get("odd")
+            )
+
+            probabilidade = float(
+                dados.get("probabilidade")
             )
 
 
-            # ==============================
+            # =================================================
             # VALIDAÇÃO
-            # ==============================
+            # =================================================
 
             if odd <= 1:
 
@@ -126,49 +178,50 @@ class handler(BaseHTTPRequestHandler):
             ):
 
                 raise ValueError(
-                    "A probabilidade deve estar entre 0 e 100."
+                    "A probabilidade deve estar "
+                    "entre 0 e 100."
                 )
 
 
-            # ==============================
+            # =================================================
             # PROBABILIDADE
-            # ==============================
+            # =================================================
 
             prob = (
                 probabilidade / 100
             )
 
 
-            # ==============================
+            # =================================================
             # PROBABILIDADE IMPLÍCITA
-            # ==============================
+            # =================================================
 
             prob_implicita = (
                 1 / odd
             ) * 100
 
 
-            # ==============================
+            # =================================================
             # EV
-            # ==============================
+            # =================================================
 
             ev = (
                 prob * odd - 1
             ) * 100
 
 
-            # ==============================
+            # =================================================
             # ODD JUSTA
-            # ==============================
+            # =================================================
 
             odd_justa = (
                 1 / prob
             )
 
 
-            # ==============================
+            # =================================================
             # DECISÃO EV+
-            # ==============================
+            # =================================================
 
             if ev < 0:
 
@@ -196,26 +249,29 @@ class handler(BaseHTTPRequestHandler):
                 classificacao = "A"
 
 
-            # ==============================
+            # =================================================
             # BANCA
-            # ==============================
+            # =================================================
 
             if momento == "live":
 
-                banca = 12.00
+                banca = BANCA_LIVE
 
             else:
 
-                banca = 25.00
+                banca = BANCA_PRE_JOGO
 
 
-            # ==============================
+            # =================================================
             # STAKE
-            # ==============================
+            # =================================================
 
             if decisao == "ENTRA":
 
-                stake = banca * 0.02
+                stake = (
+                    banca *
+                    STAKE_PADRAO
+                )
 
             else:
 
@@ -223,13 +279,14 @@ class handler(BaseHTTPRequestHandler):
 
 
             stake_maxima = (
-                banca * 0.03
+                banca *
+                STAKE_MAXIMA
             )
 
 
-            # ==============================
+            # =================================================
             # RESPOSTA
-            # ==============================
+            # =================================================
 
             resposta = {
 
@@ -237,13 +294,21 @@ class handler(BaseHTTPRequestHandler):
 
                 "sistema": "EV+ Futebol",
 
-                "versao": "5.1",
+                "versao": "5.2",
 
                 "decisao": decisao,
 
                 "classificacao": classificacao,
 
                 "risco": "BAIXO",
+
+                "casa": casa,
+
+                "visitante": visitante,
+
+                "mercado": mercado,
+
+                "momento": momento,
 
                 "odd": round(
                     odd,
@@ -285,13 +350,10 @@ class handler(BaseHTTPRequestHandler):
                     2
                 ),
 
-                "mercado": mercado,
-
-                "momento": momento,
-
                 "motivos": [
 
-                    "Cálculo EV realizado pelo motor EV+.",
+                    "Cálculo EV realizado "
+                    "pelo motor EV+.",
 
                     f"Probabilidade estimada: "
                     f"{probabilidade:.2f}%.",
