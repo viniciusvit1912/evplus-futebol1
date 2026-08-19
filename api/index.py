@@ -6,7 +6,6 @@ import json
 # EV+ FUTEBOL — API BASE ESTÁVEL
 # =========================================================
 
-
 BANCA_PRE_JOGO = 25.00
 BANCA_LIVE = 12.00
 
@@ -84,7 +83,7 @@ class handler(BaseHTTPRequestHandler):
             {
                 "status": "online",
                 "sistema": "EV+ Futebol",
-                "versao": "5.2",
+                "versao": "5.3",
                 "motor": "EV+",
                 "mensagem": "API funcionando"
             }
@@ -221,16 +220,16 @@ class handler(BaseHTTPRequestHandler):
 
             # =================================================
             # DECISÃO EV+
+            #
+            # EV < 0%       → PASSA
+            # EV < 5%       → AGUARDA
+            # EV < 8%       → ENTRA B
+            # EV >= 8%      → ENTRA A
             # =================================================
 
             if ev < 0:
 
                 decisao = "PASSA"
-                classificacao = "C"
-
-            elif ev < 3:
-
-                decisao = "AGUARDA"
                 classificacao = "C"
 
             elif ev < 5:
@@ -294,7 +293,7 @@ class handler(BaseHTTPRequestHandler):
 
                 "sistema": "EV+ Futebol",
 
-                "versao": "5.2",
+                "versao": "5.3",
 
                 "decisao": decisao,
 
