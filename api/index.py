@@ -1,39 +1,68 @@
 from http.server import BaseHTTPRequestHandler
 import json
-import math
-
-
-# =========================================================
-# EV+ FUTEBOL
-# FASE 2.1 — MOTOR OVER 1.5
-# =========================================================
-
-BANCA_PRE_JOGO = 25.00
-BANCA_LIVE = 12.00
-
-STAKE_PADRAO = 0.02
-STAKE_MAXIMA = 0.03
 
 
 class handler(BaseHTTPRequestHandler):
 
-    # =====================================================
-    # GET — TESTE DA API
-    # =====================================================
+    def enviar(self, codigo, dados):
+        corpo = json.dumps(
+            dados,
+            ensure_ascii=False
+        ).encode("utf-8")
+
+        self.send_response(codigo)
+
+        self.send_header(
+            "Content-Type",
+            "application/json; charset=utf-8"
+        )
+
+        self.send_header(
+            "Access-Control-Allow-Origin",
+            "*"
+        )
+
+        self.send_header(
+            "Access-Control-Allow-Methods",
+            "GET, POST, OPTIONS"
+        )
+
+        self.send_header(
+            "Access-Control-Allow-Headers",
+            "Content-Type"
+        )
+
+        self.send_header(
+            "Content-Length",
+            str(len(corpo))
+        )
+
+        self.end_headers()
+
+        self.wfile.write(corpo)
+
+
+    def do_OPTIONS(self):
+        self.enviar(
+            200,
+            {
+                "status": "ok"
+            }
+        )
+
 
     def do_GET(self):
+        self.enviar(
+            200,
+            {
+                "status": "online",
+                "sistema": "EV+ Futebol",
+                "versao": "5.0",
+                "motor": "EV+",
+                "mensagem": "API funcionando"
+            }
+        )
 
-        self.enviar(200, {
-            "status": "online",
-            "sistema": "EV+ Futebol",
-            "versao": "2.1",
-            "motor": "Over 1.5",
-            "mensagem": "API funcionando"
-        })
-
-    # =====================================================
-    # POST — ANÁLISE
-    # =====================================================
 
     def do_POST(self):
 
@@ -42,163 +71,41 @@ class handler(BaseHTTPRequestHandler):
             tamanho = int(
                 self.headers.get(
                     "Content-Length",
-                    "0"
+                    0
                 )
             )
 
-            corpo = self.rfile.read(tamanho)
-
-            if not corpo:
-                raise ValueError("Corpo da requisição vazio.")
+            corpo = self.rfile.read(
+                tamanho
+            )
 
             dados = json.loads(
                 corpo.decode("utf-8")
             )
 
-            odd = self.numero(
+            odd = float(
                 dados.get("odd")
             )
 
-            probabilidade_manual = self.numero(
+            probabilidade = float(
                 dados.get("probabilidade")
             )
 
-            momento = str(
-                dados.get(
-                    "momento",
-                    "pre"
-                )
-            ).lower()
+            if odd <= 1:
 
-            mercado = str(
-                dados.get(
-                    "mercado",
-                    "Over 1.5"
-                )
-            )
-
-            minuto = self.numero(
-                dados.get("minuto")
-            )
-
-            placar = str(
-                dados.get(
-                    "placar",
-                    ""
-                )
-            )
-
-            # =================================================
-            # VALIDAÇÃO
-            # =================================================
-
-            if odd is None or odd <= 1:
                 raise ValueError(
                     "A odd deve ser maior que 1."
                 )
 
             if (
-                probabilidade_manual is None
-                or probabilidade_manual <= 0
-                or probabilidade_manual > 100
+                probabilidade <= 0
+                or probabilidade > 100
             ):
+
                 raise ValueError(
                     "A probabilidade deve estar entre 0 e 100."
                 )
 
-            # =================================================
-            # DADOS ESTATÍSTICOS
-            # =================================================
-
-            xg_casa = self.numero(
-                dados.get("xgCasa")
-            )
-
-            xg_fora = self.numero(
-                dados.get("xgFora")
-            )
-
-            xgot_casa = self.numero(
-                dados.get("xgotCasa")
-            )
-
-            xgot_fora = self.numero(
-                dados.get("xgotFora")
-            )
-
-            final_casa = self.numero(
-                dados.get("finalCasa")
-            )
-
-            final_fora = self.numero(
-                dados.get("finalFora")
-            )
-
-            alvo_casa = self.numero(
-                dados.get("alvoCasa")
-            )
-
-            alvo_fora = self.numero(
-                dados.get("alvoFora")
-            )
-
-            chances_casa = self.numero(
-                dados.get("chancesCasa")
-            )
-
-            chances_fora = self.numero(
-                dados.get("chancesFora")
-            )
-
-            # =================================================
-            # MODELO OVER 1.5
-            # =================================================
-
-            prob_modelo = self.modelo_over15(
-                momento=momento,
-                minuto=minuto,
-                placar=placar,
-                xg_casa=xg_casa,
-                xg_fora=xg_fora,
-                xgot_casa=xgot_casa,
-                xgot_fora=xgot_fora,
-                final_casa=final_casa,
-                final_fora=final_fora,
-                alvo_casa=alvo_casa,
-                alvo_fora=alvo_fora,
-                chances_casa=chances_casa,
-                chances_fora=chances_fora
-            )
-
-            # =================================================
-            # PROBABILIDADE FINAL
-            # =================================================
-
-            if prob_modelo is not None:
-
-                probabilidade = (
-                    probabilidade_manual * 0.70
-                    +
-                    prob_modelo * 0.30
-                )
-
-            else:
-
-                probabilidade = (
-                    probabilidade_manual
-                )
-
-            probabilidade = max(
-                1,
-                min(
-                    99,
-                    probabilidade
-                )
-            )
-
-            # =================================================
-            # EV
-            # =================================================
 
             prob = (
                 probabilidade / 100
@@ -209,79 +116,149 @@ class handler(BaseHTTPRequestHandler):
             ) * 100
 
             ev = (
-                prob * odd
-            ) - 1
-
-            ev_percentual = (
-                ev * 100
-            )
+                prob * odd - 1
+            ) * 100
 
             odd_justa = (
                 1 / prob
             )
 
-            # =================================================
-            # RISCO
-            # =================================================
 
-            risco = self.calcular_risco(
-                momento=momento,
-                minuto=minuto,
-                mercado=mercado,
-                prob_modelo=prob_modelo,
-                xg_casa=xg_casa,
-                xg_fora=xg_fora,
-                final_casa=final_casa,
-                final_fora=final_fora
-            )
+            if ev < 0:
 
-            # =================================================
-            # DECISÃO
-            # =================================================
+                decisao = "PASSA"
+                classificacao = "C"
 
-            decisao = self.decisao(
-                ev_percentual,
-                risco
-            )
+            elif ev < 3:
 
-            # =================================================
-            # CLASSIFICAÇÃO
-            # =================================================
+                decisao = "AGUARDA"
+                classificacao = "C"
 
-            classificacao = self.classificacao(
-                ev_percentual,
-                risco,
-                decisao
-            )
+            elif ev < 5:
 
-            # =================================================
-            # BANCA
-            # =================================================
+                decisao = "AGUARDA"
+                classificacao = "C"
+
+            elif ev < 8:
+
+                decisao = "ENTRA"
+                classificacao = "B"
+
+            else:
+
+                decisao = "ENTRA"
+                classificacao = "A"
+
+
+            momento = str(
+                dados.get(
+                    "momento",
+                    "pre"
+                )
+            ).lower()
+
 
             if momento == "live":
-                banca = BANCA_LIVE
+
+                banca = 12.00
+
             else:
-                banca = BANCA_PRE_JOGO
 
-            # =================================================
-            # STAKE
-            # =================================================
+                banca = 25.00
 
-            stake_maxima = (
-                banca *
-                STAKE_MAXIMA
-            )
 
             if decisao == "ENTRA":
 
-                stake = (
-                    banca *
-                    STAKE_PADRAO
-                )
-
-                stake = min(
-                    stake,
-                    stake_maxima
-                )
+                stake = banca * 0.02
 
             else:
+
+                stake = 0.00
+
+
+            resposta = {
+
+                "status": "ok",
+
+                "sistema": "EV+ Futebol",
+
+                "versao": "5.0",
+
+                "decisao": decisao,
+
+                "classificacao": classificacao,
+
+                "risco": "BAIXO",
+
+                "odd": round(
+                    odd,
+                    2
+                ),
+
+                "probabilidade_estimada": round(
+                    probabilidade,
+                    2
+                ),
+
+                "probabilidade_implicita": round(
+                    prob_implicita,
+                    2
+                ),
+
+                "ev": round(
+                    ev,
+                    2
+                ),
+
+                "odd_justa": round(
+                    odd_justa,
+                    2
+                ),
+
+                "banca": round(
+                    banca,
+                    2
+                ),
+
+                "stake_recomendada": round(
+                    stake,
+                    2
+                ),
+
+                "stake_maxima": round(
+                    banca * 0.03,
+                    2
+                ),
+
+                "mercado": dados.get(
+                    "mercado",
+                    ""
+                ),
+
+                "momento": momento,
+
+                "motivos": [
+                    "Cálculo EV realizado pelo motor EV+.",
+                    f"Probabilidade implícita: {prob_implicita:.2f}%.",
+                    f"Odd justa: {odd_justa:.2f}.",
+                    f"EV: {ev:.2f}%."
+                ]
+
+            }
+
+
+            self.enviar(
+                200,
+                resposta
+            )
+
+
+        except Exception as erro:
+
+            self.enviar(
+                400,
+                {
+                    "status": "erro",
+                    "mensagem": str(erro)
+                }
+            )
